@@ -1,0 +1,23 @@
+.hr-layout {
+  display: flex;
+  min-height: calc(100vh - 64px);
+
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    .content {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      background: #f3f4f6;
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .hr-layout {
+    flex-direction: column;
+  }
+}

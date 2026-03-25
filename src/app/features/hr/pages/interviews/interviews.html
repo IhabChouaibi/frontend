@@ -1,0 +1,14 @@
+<app-button (click)="openModal(1)">Schedule Interview</app-button>
+
+<ul>
+  <li *ngFor="let i of interviews">
+    {{ i.date }} - {{ i.location }}
+  </li>
+</ul>
+
+<app-interview-modal
+  [visible]="showModal"
+  [applicationId]="selectedApplicationId"
+  (close)="showModal = false"
+  (scheduled)="load()">
+</app-interview-modal>

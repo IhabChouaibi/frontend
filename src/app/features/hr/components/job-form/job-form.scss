@@ -1,0 +1,13 @@
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+  }
+}

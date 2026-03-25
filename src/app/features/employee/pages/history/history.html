@@ -1,0 +1,32 @@
+<section class="history-page">
+  <h2>Leave History</h2>
+
+  <input
+    type="search"
+    class="search-input"
+    [formControl]="searchControl"
+    placeholder="Search your leave history"
+  />
+
+  <app-loader *ngIf="loading"></app-loader>
+  <p class="error" *ngIf="error">{{ error }}</p>
+
+  <app-table [data]="leaves" [columns]="['id', 'startDate', 'endDate', 'status']">
+    <ng-template let-item>
+      <td>{{ item.id }}</td>
+      <td>{{ item.startDate }}</td>
+      <td>{{ item.endDate }}</td>
+      <td>{{ item.status }}</td>
+    </ng-template>
+  </app-table>
+
+  <div class="pagination" *ngIf="!loading && totalPages > 0">
+    <button
+      type="button"
+      *ngFor="let pageIndex of [].constructor(totalPages); let index = index"
+      (click)="changePage(index)"
+    >
+      {{ index + 1 }}
+    </button>
+  </div>
+</section>

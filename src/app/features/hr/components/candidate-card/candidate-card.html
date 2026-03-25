@@ -1,0 +1,9 @@
+<div class="card">
+  <h3>{{ candidate.firstName }}</h3>
+  <p>{{ candidate.email }}</p>
+  <p>{{ candidate.phone }}</p>
+
+  <div class="actions">
+    <app-button (click)="downloadCv()">Download CV</app-button>
+  </div>
+</div>

@@ -1,0 +1,22 @@
+<section class="presence-page">
+  <h2>Presence</h2>
+
+  <app-loader *ngIf="loading"></app-loader>
+  <p class="error" *ngIf="error">{{ error }}</p>
+
+  <app-table
+    *ngIf="!loading"
+    [data]="presences"
+    [columns]="['employeeId', 'date', 'checkIn', 'checkOut', 'status']"
+  ></app-table>
+
+  <div class="pagination" *ngIf="!loading && totalPages > 0">
+    <button
+      type="button"
+      *ngFor="let pageIndex of [].constructor(totalPages); let index = index"
+      (click)="changePage(index)"
+    >
+      {{ index + 1 }}
+    </button>
+  </div>
+</section>

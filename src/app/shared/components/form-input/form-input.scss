@@ -1,0 +1,16 @@
+.form-group {
+  margin-bottom: 15px;
+  .form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    font-size: 14px;
+
+    &:focus {
+      border-color: #4f46e5;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(79,70,229,0.2);
+    }
+  }
+}

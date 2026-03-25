@@ -1,0 +1,46 @@
+<div class="page">
+
+  <h2>Présence / Pointage</h2>
+
+  <!-- ACTIONS -->
+  <div class="actions">
+    <app-button (click)="checkIn()" [disabled]="loading">
+      Check In
+    </app-button>
+
+    <app-button (click)="checkOut()" [disabled]="loading">
+      Check Out
+    </app-button>
+  </div>
+
+  <app-loader *ngIf="loading"></app-loader>
+
+  <div class="success" *ngIf="message">{{ message }}</div>
+  <div class="error" *ngIf="error">{{ error }}</div>
+
+  <!-- HISTORY -->
+  <h3>Historique</h3>
+
+  <app-table
+    [data]="presences"
+    [columns]="['date','checkIn','checkOut','status']">
+
+
+    <ng-template let-item>
+      <td>{{ item.date }}</td>
+      <td>{{ item.checkIn }}</td>
+      <td>{{ item.checkOut }}</td>
+      <td>{{ item.status }}</td>
+    </ng-template>
+
+  </app-table>
+
+  <!-- PAGINATION -->
+  <div class="pagination">
+    <button *ngFor="let p of [].constructor(totalPages); let i = index"
+            (click)="changePage(i)">
+      {{ i + 1 }}
+    </button>
+  </div>
+
+</div>

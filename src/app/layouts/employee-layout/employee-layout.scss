@@ -1,0 +1,23 @@
+.employee-layout {
+  display: flex;
+  min-height: calc(100vh - 64px);
+
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    .content {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      background: #f9fafb;
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .employee-layout {
+    flex-direction: column;
+  }
+}

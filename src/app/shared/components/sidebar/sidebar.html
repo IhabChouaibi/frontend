@@ -1,0 +1,15 @@
+<aside class="sidebar">
+  <div class="brand">{{ title }}</div>
+
+  <nav class="nav">
+    <a
+      *ngFor="let item of items"
+      class="nav-link"
+      [routerLink]="item.route"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: false }"
+    >
+      {{ item.label }}
+    </a>
+  </nav>
+</aside>

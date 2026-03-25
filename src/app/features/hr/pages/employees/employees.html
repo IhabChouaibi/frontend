@@ -1,0 +1,49 @@
+<section class="employees-page">
+  <div class="page-header">
+    <div>
+      <h2>Employees</h2>
+      <p>{{ totalElements }} employee(s)</p>
+    </div>
+
+    <input
+      type="search"
+      class="search-input"
+      [formControl]="searchControl"
+      placeholder="Search by name, email, or user ID"
+    />
+  </div>
+
+  <app-loader *ngIf="loading"></app-loader>
+  <p class="error" *ngIf="error">{{ error }}</p>
+
+  <table class="employees-table" *ngIf="!loading">
+    <thead>
+      <tr>
+        <th *ngFor="let column of tableColumns">{{ column }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let employee of employees">
+        <td>{{ employee.id }}</td>
+        <td>{{ employee.firstName }}</td>
+        <td>{{ employee.lastName }}</td>
+        <td>{{ employee.email }}</td>
+        <td>{{ employee.departmentCode || '-' }}</td>
+        <td>{{ employee.jobTitle || '-' }}</td>
+        <td class="actions-cell">
+          <app-button (click)="onEdit(employee, $event)">Edit</app-button>
+          <app-button (click)="onDelete(employee, $event)">Delete</app-button>
+        </td>
+      </tr>
+      <tr *ngIf="employees.length === 0">
+        <td colspan="7" class="empty-state">No employees found.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="pagination" *ngIf="!loading && totalPages > 0">
+    <app-button (click)="previousPage()" [disabled]="page === 0">Previous</app-button>
+    <span>Page {{ page + 1 }} / {{ totalPages }}</span>
+    <app-button (click)="nextPage()" [disabled]="page + 1 >= totalPages">Next</app-button>
+  </div>
+</section>

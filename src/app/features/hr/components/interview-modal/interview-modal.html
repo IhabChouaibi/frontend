@@ -1,0 +1,8 @@
+<app-modal [visible]="visible" title="Schedule Interview" (close)="close.emit()">
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <app-form-input  name="date" formControlName="date" placeholder="Date"></app-form-input>
+    <app-form-input name="location" formControlName="location" placeholder="Location"></app-form-input>
+
+    <app-button type="submit" [loading]="loading">Schedule</app-button>
+  </form>
+</app-modal>

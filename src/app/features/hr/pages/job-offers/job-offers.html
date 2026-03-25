@@ -1,0 +1,14 @@
+<app-button (click)="showForm = true">Add Job</app-button>
+
+<div class="grid">
+  <div class="card" *ngFor="let job of jobs">
+    <h3>{{ job.title }}</h3>
+    <p>{{ job.description }}</p>
+
+    <app-button (click)="delete(job.id)">Delete</app-button>
+  </div>
+</div>
+
+<app-modal [visible]="showForm" title="Job Form" (close)="showForm = false">
+  <app-job-form (saved)="load(); showForm = false"></app-job-form>
+</app-modal>

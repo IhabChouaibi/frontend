@@ -1,0 +1,25 @@
+<div class="page">
+
+  <h2>Jobs</h2>
+
+  <app-button (click)="showModal = true">Add Job</app-button>
+
+  <app-modal *ngIf="showModal" (close)="showModal = false">
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+
+      <form-input label="Title" formControlName="title"></form-input>
+
+      <select formControlName="departmentId">
+        <option *ngFor="let d of departments" [value]="d.id">
+          {{ d.name }}
+        </option>
+      </select>
+
+      <app-button type="submit">Save</app-button>
+
+    </form>
+
+  </app-modal>
+
+</div>

@@ -1,0 +1,36 @@
+<section class="leave-validation-page">
+  <h2>Leave Requests</h2>
+
+  <input
+    type="search"
+    class="search-input"
+    [formControl]="searchControl"
+    placeholder="Search pending leaves"
+  />
+
+  <app-loader *ngIf="loading"></app-loader>
+  <p class="error" *ngIf="error">{{ error }}</p>
+
+  <app-table [data]="requests" [columns]="['id', 'employeeId', 'startDate', 'endDate', 'actions']">
+    <ng-template let-item>
+      <td>{{ item.id }}</td>
+      <td>{{ item.employeeId }}</td>
+      <td>{{ item.startDate }}</td>
+      <td>{{ item.endDate }}</td>
+      <td>
+        <app-button (click)="approve(item.id, $event)">Approve</app-button>
+        <app-button (click)="reject(item.id, $event)">Reject</app-button>
+      </td>
+    </ng-template>
+  </app-table>
+
+  <div class="pagination" *ngIf="!loading && totalPages > 0">
+    <button
+      type="button"
+      *ngFor="let pageIndex of [].constructor(totalPages); let index = index"
+      (click)="changePage(index)"
+    >
+      {{ index + 1 }}
+    </button>
+  </div>
+</section>

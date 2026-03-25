@@ -1,0 +1,9 @@
+<tr>
+  <td>{{ application.candidateName }}</td>
+  <td>{{ application.jobTitle }}</td>
+  <td>{{ application.status }}</td>
+  <td>
+    <app-button [loading]="loadingApprove" (click)="approve()">Approve</app-button>
+    <app-button [loading]="loadingReject" (click)="reject()">Reject</app-button>
+  </td>
+</tr>

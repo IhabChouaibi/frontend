@@ -1,0 +1,30 @@
+<div class="page">
+
+  <h2>leave request</h2>
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+
+    <form-input label="Start Date" type="date" formControlName="startDate"></form-input>
+    <form-input label="End Date" type="date" formControlName="endDate"></form-input>
+
+    <select formControlName="leaveTypeId">
+      <option value="">Select Type</option>
+      <option *ngFor="let t of leaveTypes" [value]="t.id">
+        {{ t.name }}
+      </option>
+    </select>
+
+    <form-input label="Reason" formControlName="reason"></form-input>
+
+    <app-button type="submit" [disabled]="loading">
+      Submit
+    </app-button>
+
+  </form>
+
+  <app-loader *ngIf="loading"></app-loader>
+
+  <div class="success" *ngIf="success">{{ success }}</div>
+  <div class="error" *ngIf="error">{{ error }}</div>
+
+</div>

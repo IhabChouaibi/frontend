@@ -1,0 +1,21 @@
+.page {
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.error {
+  color: red;
+}
+
+.pagination {
+  margin-top: 15px;
+
+  button {
+    margin-right: 5px;
+  }
+}

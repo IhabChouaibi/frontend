@@ -1,0 +1,17 @@
+<div class="apply-container">
+  <h2>Apply for Job</h2>
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <app-form-input formControlName="name" placeholder="Full Name"></app-form-input>
+    <app-form-input formControlName="email" placeholder="Email"></app-form-input>
+    <app-form-input formControlName="phone" placeholder="Phone"></app-form-input>
+
+    <div class="form-group">
+      <label>Upload CV</label>
+      <input type="file" (change)="onFileChange($event)" />
+      <small *ngIf="form.get('cv')?.invalid && form.get('cv')?.touched">CV is required</small>
+    </div>
+
+    <app-button [loading]="loading" type="submit">Submit Application</app-button>
+  </form>
+</div>

@@ -1,0 +1,23 @@
+<table class="app-table">
+  <thead>
+    <tr>
+      <th *ngFor="let col of columns">{{ col }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let row of data" (click)="onRowClick(row)">
+      <ng-container *ngIf="rowTemplate; else defaultRow">
+        <ng-container
+          *ngTemplateOutlet="rowTemplate; context: { $implicit: row }"
+        ></ng-container>
+      </ng-container>
+
+      <ng-template #defaultRow>
+        <td *ngFor="let col of columns">{{ row[col] }}</td>
+      </ng-template>
+    </tr>
+    <tr *ngIf="data.length === 0">
+      <td [attr.colspan]="columns.length">No data available.</td>
+    </tr>
+  </tbody>
+</table>

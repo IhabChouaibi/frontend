@@ -1,0 +1,83 @@
+.page {
+  padding: 20px;
+}
+
+h2 {
+  margin-bottom: 20px;
+}
+
+/* Table spacing */
+app-table {
+  margin-top: 15px;
+}
+
+/* Actions buttons */
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Buttons style override (optionnel si ton shared est simple) */
+.actions app-button {
+  min-width: 90px;
+}
+
+/* Status colors (important UX SaaS) */
+.status {
+  &.pending {
+    color: orange;
+    font-weight: 500;
+  }
+
+  &.approved {
+    color: green;
+    font-weight: 500;
+  }
+
+  &.rejected {
+    color: red;
+    font-weight: 500;
+  }
+}
+
+/* Loader & messages */
+.success {
+  color: green;
+  margin-top: 10px;
+}
+
+.error {
+  color: red;
+  margin-top: 10px;
+}
+
+/* Pagination */
+.pagination {
+  margin-top: 15px;
+
+  button {
+    margin-right: 5px;
+    padding: 6px 10px;
+    border: none;
+    background: #f1f1f1;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: 0.2s;
+
+    &:hover {
+      background: #ddd;
+    }
+
+    &.active {
+      background: #3f51b5;
+      color: white;
+    }
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .actions {
+    flex-direction: column;
+  }
+}

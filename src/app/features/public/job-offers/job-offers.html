@@ -1,0 +1,8 @@
+<div *ngIf="loading">Loading job offers...</div>
+<div class="grid" *ngIf="!loading">
+  <div class="card" *ngFor="let offer of jobOffers">
+    <h3>{{ offer.title }}</h3>
+    <p>{{ offer.description | truncate:100 }}</p>
+    <app-button (click)="apply(offer.id)">Apply</app-button>
+  </div>
+</div>

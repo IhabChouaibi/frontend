@@ -1,7 +1,7 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule, FormGroup } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { AuthService } from '../../services/auth-service';
+import { AuthService } from '../../core/services/auth-service';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
@@ -11,20 +11,33 @@ import { ActivatedRoute, Router } from '@angular/router';
   styleUrls: ['./login.css'],
 })
 export class Login  {
- 
+   private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
   loading = false;
   errorMessage: string | null = null;
-private fb = inject(FormBuilder);
-private authService = inject(AuthService);
-private router = inject(Router);
 
-loginForm = this.fb.group({
-  username: ['', Validators.required],
-  password: ['', Validators.required]
-});
+  // Formulaire réactif
+  loginForm = this.fb.group({
+    username: ['', Validators.required],
+    password: ['', Validators.required]
+  });
 
-  submit(): void {
+  // Configuration pour FormInput
+  fields = [
+    { name: 'username', label: 'Username', type: 'text', validators: [Validators.required] },
+    { name: 'password', label: 'Password', type: 'password', validators: [Validators.required] },
+  ];
 
+   get loginRequest() {
+    return {
+      username: this.loginForm.get('username')?.value || '',
+      password: this.loginForm.get('password')?.value || ''
+    };
+  }
+
+  submit() {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
@@ -33,30 +46,17 @@ loginForm = this.fb.group({
     this.loading = true;
     this.errorMessage = null;
 
-    this.authService.login(this.loginForm.value as any).subscribe({
-
-       next: (res) => {
-    console.log("SUCCESS", res);
-    this.router.navigate(['/dashboard']);
-  },
-  error: (err) => {
-    console.log("ERROR", err);
-  },
-
-      complete: () => {
-        this.loading = false;
-      }
-
+    this.authService.login(this.loginRequest).subscribe({
+      next: () => {
+        const roles = this.authService.getRole();
+        if (roles.includes('HR')) this.router.navigate(['/hr/dashboard']);
+        else if (roles.includes('EMPLOYEE')) this.router.navigate(['/employee/dashboard']);
+        else this.router.navigate(['/dashboard']);
+      },
+      error: (err) => {
+        this.errorMessage = err?.error?.message || 'Login failed. Please check your credentials.';
+      },
+      complete: () => this.loading = false
     });
   }
-
-  get username() {
-    return this.loginForm.get('username');
-  }
-
-  get password() {
-    return this.loginForm.get('password');
-  }
- 
-
 }

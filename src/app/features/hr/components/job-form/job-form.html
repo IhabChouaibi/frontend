@@ -1,0 +1,11 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <app-form-input formControlName="title" placeholder="Job Title"></app-form-input>
+  
+  <div class="form-group">
+    <textarea formControlName="description" placeholder="Description"></textarea>
+  </div>
+
+  <app-button type="submit" [loading]="loading">
+    {{ job ? 'Update' : 'Create' }}
+  </app-button>
+</form>

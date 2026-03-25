@@ -1,0 +1,20 @@
+<nav class="navbar">
+  <div class="logo">HRMS</div>
+
+  <div class="navbar-actions" *ngIf="username; else publicState">
+    <button type="button" class="notification-btn" aria-label="Notifications">
+      Notifications
+    </button>
+
+    <div class="user-info">
+      <span>{{ username }} ({{ role }})</span>
+      <button (click)="logout()">Logout</button>
+    </div>
+  </div>
+
+  <ng-template #publicState>
+    <div class="public-state">
+      <span>Human Resource Management System</span>
+    </div>
+  </ng-template>
+</nav>
