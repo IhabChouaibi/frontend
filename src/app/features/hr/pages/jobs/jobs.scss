@@ -1,39 +1,4 @@
-.page {
-  padding: 20px;
-}
-
-h2 {
-  margin-bottom: 20px;
-}
-
-app-button {
-  margin-bottom: 15px;
-}
-
-/* Modal form */
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-/* Select style (important pour UX propre) */
-select {
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  outline: none;
-  font-size: 14px;
-  transition: 0.2s;
-
-  &:focus {
-    border-color: #3f51b5;
-  }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .page {
-    padding: 10px;
-  }
+.job-create-form {
+  display: grid;
+  gap: 1rem;
 }

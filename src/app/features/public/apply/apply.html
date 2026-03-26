@@ -1,17 +1,30 @@
-<div class="apply-container">
-  <h2>Apply for Job</h2>
-
-  <form [formGroup]="form" (ngSubmit)="submit()">
-    <app-form-input formControlName="name" placeholder="Full Name"></app-form-input>
-    <app-form-input formControlName="email" placeholder="Email"></app-form-input>
-    <app-form-input formControlName="phone" placeholder="Phone"></app-form-input>
-
-    <div class="form-group">
-      <label>Upload CV</label>
-      <input type="file" (change)="onFileChange($event)" />
-      <small *ngIf="form.get('cv')?.invalid && form.get('cv')?.touched">CV is required</small>
+<section class="apply-page">
+  <div class="apply-card">
+    <div class="apply-card__intro">
+      <span class="eyebrow">Application</span>
+      <h2>Postuler en quelques minutes.</h2>
+      <p>
+        Remplissez vos informations essentielles et ajoutez votre CV pour finaliser votre
+        candidature aupres de l equipe ISAM engineering.
+      </p>
     </div>
 
-    <app-button [loading]="loading" type="submit">Submit Application</app-button>
-  </form>
-</div>
+    <form [formGroup]="form" (ngSubmit)="submit()" class="apply-form">
+      <div class="field-grid">
+        <app-form-input formControlName="name" label="Nom complet" placeholder="Nom complet"></app-form-input>
+        <app-form-input formControlName="email" label="Email" placeholder="Email"></app-form-input>
+        <app-form-input formControlName="phone" label="Telephone" placeholder="Telephone"></app-form-input>
+      </div>
+
+      <div class="field-stack">
+        <label for="cv">CV</label>
+        <input id="cv" type="file" (change)="onFileChange($event)" />
+        <small *ngIf="form.get('cv')?.invalid && form.get('cv')?.touched" class="error-message">
+          Le CV est obligatoire.
+        </small>
+      </div>
+
+      <app-button [loading]="loading" type="submit">Submit Application</app-button>
+    </form>
+  </div>
+</section>

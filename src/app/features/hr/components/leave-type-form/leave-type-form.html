@@ -1,0 +1,34 @@
+<form [formGroup]="form" (ngSubmit)="submitted.emit()" class="leave-type-form">
+  <div class="field-grid">
+    <app-form-input label="Name" formControlName="name" placeholder="Leave type name"></app-form-input>
+    <app-form-input label="Max days / year" type="number" formControlName="maxDaysPerYear" placeholder="20"></app-form-input>
+  </div>
+
+  <div class="field-grid">
+    <div class="field-stack">
+      <label for="paid">Paid</label>
+      <select id="paid" formControlName="paid">
+        <option value="YES">YES</option>
+        <option value="NO">NO</option>
+      </select>
+    </div>
+
+    <div class="field-stack">
+      <label for="requiresApproval">Requires approval</label>
+      <select id="requiresApproval" formControlName="requiresApproval">
+        <option value="YES">YES</option>
+        <option value="NO">NO</option>
+      </select>
+    </div>
+
+    <div class="field-stack">
+      <label for="requiresDocument">Requires document</label>
+      <select id="requiresDocument" formControlName="requiresDocument">
+        <option value="YES">YES</option>
+        <option value="NO">NO</option>
+      </select>
+    </div>
+  </div>
+
+  <app-button type="submit" [loading]="loading">Save leave type</app-button>
+</form>

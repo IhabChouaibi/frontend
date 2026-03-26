@@ -1,15 +1,5 @@
-.presence-page {
+.row-actions {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.pagination {
-  display: flex;
-  gap: 8px;
-}
-
-.error {
-  color: #b91c1c;
-  margin: 0;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }

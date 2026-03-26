@@ -1,12 +1,24 @@
 <div class="public-layout">
-  <header class="navbar">
-    <div class="logo">HRMS Public</div>
-    <nav>
-      <a routerLink="/">Home</a>
-      <a routerLink="/jobs">Jobs</a>
-    </nav>
+  <header class="public-header">
+    <div class="public-header__inner">
+      <a class="public-brand" routerLink="/">
+        <span class="public-brand__mark">IS</span>
+        <div>
+          <strong>ISAM engineering</strong>
+          <small>Digital transformation since 2010</small>
+        </div>
+      </a>
+
+      <nav class="public-nav">
+        <a routerLink="/login">Login</a>
+        <a routerLink="/" fragment="job-offers">Job Offers</a>
+        <a routerLink="/" fragment="contact">Contact</a>
+        <a routerLink="/" fragment="about">A propos</a>
+      </nav>
+    </div>
   </header>
-  <main>
+
+  <main class="public-main">
     <router-outlet></router-outlet>
   </main>
 </div>

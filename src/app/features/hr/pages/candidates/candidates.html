@@ -1,6 +1,12 @@
-<div class="grid">
-  <app-candidate-card 
-    *ngFor="let c of candidates"
-    [candidate]="c">
-  </app-candidate-card>
-</div>
+<section class="page-shell">
+  <div class="page-hero">
+    <div class="page-hero__content">
+      <span class="eyebrow">Candidates</span>
+      <h1 class="page-title">Centraliser les profils recus et consulter leur dossier.</h1>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+    <app-candidate-card *ngFor="let candidate of candidates" [candidate]="candidate"></app-candidate-card>
+  </div>
+</section>

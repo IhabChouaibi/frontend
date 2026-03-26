@@ -1,1 +1,13 @@
-<p>history-table works!</p>
+<app-table [data]="leaves" [columns]="['Id', 'Period', 'Type', 'Status', 'Reason']">
+  <ng-template let-item>
+    <td>#{{ item.id || '-' }}</td>
+    <td>{{ item.startDate }} - {{ item.endDate }}</td>
+    <td>{{ item.leaveTypeId }}</td>
+    <td>
+      <span class="status-badge" [ngClass]="'status-badge--' + (item.status || 'pending').toLowerCase()">
+        {{ item.status || 'PENDING' }}
+      </span>
+    </td>
+    <td>{{ item.reason || '-' }}</td>
+  </ng-template>
+</app-table>

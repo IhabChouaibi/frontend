@@ -11,7 +11,14 @@ export class HrLayout {
   readonly sidebarItems: SidebarItem[] = [
     { label: 'Dashboard', route: '/hr/dashboard' },
     { label: 'Employees', route: '/hr/employees' },
-    { label: 'Leaves', route: '/hr/leaves' },
+    { label: 'Leave Types', route: '/hr/leave-types' },
+    { label: 'Leave Validations', route: '/hr/leaves' },
     { label: 'Presence', route: '/hr/presence' },
+    { label: 'Departments', route: '/hr/departments' },
+    { label: 'Jobs', route: '/hr/jobs' },
+    { label: 'Job Offers', route: '/hr/job-offers' },
+    { label: 'Candidates', route: '/hr/candidates' },
+    { label: 'Applications', route: '/hr/applications' },
+    { label: 'Interviews', route: '/hr/interviews' },
   ];
 }

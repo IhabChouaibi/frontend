@@ -4,9 +4,10 @@
 
    <form [formGroup]="loginForm" (ngSubmit)="submit()">
 
-  <app-form-input name="username" placeholder="Username"></app-form-input>
+  <app-form-input formControlName="username" name="username" placeholder="Username"></app-form-input>
 
 <app-form-input
+  formControlName="password"
   name="password" 
   type="password"
   placeholder="password"

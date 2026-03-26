@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { AuthService } from '../../../../core/services/auth-service';
+import { Component, Input } from '@angular/core';
+
+import { Employee } from '../../../../models/employee-service/employee';
 
 @Component({
   selector: 'app-profile-card',
@@ -7,15 +8,7 @@ import { AuthService } from '../../../../core/services/auth-service';
   templateUrl: './profile-card.html',
   styleUrl: './profile-card.scss',
 })
-export class ProfileCard implements OnInit{
- username: string | null = '';
-
-constructor(private authService: AuthService) {}
-
-ngOnInit(): void {
-  this.authService.getUsername$().subscribe(name => {
-    this.username = name;
-  });
-}
-
+export class ProfileCard {
+  @Input() employee: Employee | null = null;
+  @Input() username: string | null = '';
 }

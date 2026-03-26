@@ -1,11 +1,15 @@
-<form [formGroup]="form" (ngSubmit)="submit()">
-  <app-form-input formControlName="title" placeholder="Job Title"></app-form-input>
-  
-  <div class="form-group">
-    <textarea formControlName="description" placeholder="Description"></textarea>
+<form [formGroup]="form" (ngSubmit)="submit()" class="job-form">
+  <div class="field-grid">
+    <app-form-input label="Title" formControlName="title" placeholder="Job title"></app-form-input>
+    <app-form-input label="Location" formControlName="location" placeholder="Location"></app-form-input>
+    <app-form-input label="Employment type" formControlName="employmentType" placeholder="Full time"></app-form-input>
+    <app-form-input label="Experience level" formControlName="experienceLevel" placeholder="Senior"></app-form-input>
   </div>
 
-  <app-button type="submit" [loading]="loading">
-    {{ job ? 'Update' : 'Create' }}
-  </app-button>
+  <div class="field-stack">
+    <label for="description">Description</label>
+    <textarea id="description" formControlName="description" placeholder="Role description"></textarea>
+  </div>
+
+  <app-button type="submit" [loading]="loading">{{ job ? 'Update offer' : 'Create offer' }}</app-button>
 </form>

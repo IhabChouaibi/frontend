@@ -1,1 +1,20 @@
-<p>leave-form works!</p>
+<form [formGroup]="form" (ngSubmit)="submitted.emit()" class="leave-form">
+  <div class="field-grid">
+    <app-form-input label="Start date" type="date" formControlName="startDate"></app-form-input>
+    <app-form-input label="End date" type="date" formControlName="endDate"></app-form-input>
+  </div>
+
+  <div class="field-grid">
+    <div class="field-stack">
+      <label for="leaveTypeId">Leave type</label>
+      <select id="leaveTypeId" formControlName="leaveTypeId">
+        <option value="">Select type</option>
+        <option *ngFor="let type of leaveTypes" [value]="type.id">{{ type.name }}</option>
+      </select>
+    </div>
+
+    <app-form-input label="Reason" formControlName="reason" placeholder="Reason for leave"></app-form-input>
+  </div>
+
+  <app-button type="submit" [loading]="loading">Submit request</app-button>
+</form>

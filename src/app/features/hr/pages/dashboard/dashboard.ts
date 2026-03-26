@@ -1,6 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-import { JobOfferService } from '../../../../core/services/recruitment/job-offer';
+import { Component } from '@angular/core';
+import { forkJoin } from 'rxjs';
+
 import { CandidateService } from '../../../../core/services/recruitment/candidate';
+import { EmployeeService } from '../../../../core/services/employee-service/employee.service';
+import { JobOfferService } from '../../../../core/services/recruitment/job-offer';
+import { LeaveService } from '../../../../core/services/leave-service/leave.service';
+import { PresenceService } from '../../../../core/services/presence-service/presence.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -8,29 +13,50 @@ import { CandidateService } from '../../../../core/services/recruitment/candidat
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
-export class Dashboard implements OnInit{
+export class Dashboard {
   stats = {
-    jobs: 0,
+    employees: 0,
+    pendingLeaves: 0,
+    pendingPresence: 0,
+    jobOffers: 0,
     candidates: 0
   };
 
+  loading = false;
+  error = '';
+
   constructor(
-    private jobService: JobOfferService,
-    private candidateService: CandidateService
+    private readonly employeeService: EmployeeService,
+    private readonly leaveService: LeaveService,
+    private readonly presenceService: PresenceService,
+    private readonly jobService: JobOfferService,
+    private readonly candidateService: CandidateService
   ) {}
 
   ngOnInit(): void {
-    this.loadStats();
-  }
+    this.loading = true;
 
-  loadStats() {
-    this.jobService.getAllPaged().subscribe(res => {
-      this.stats.jobs = res.totalElements;
+    forkJoin({
+      employees: this.employeeService.getAll(0, 1),
+      pendingLeaves: this.leaveService.getPending(0, 10),
+      pendingPresence: this.presenceService.getPendingValidation(0, 10),
+      jobOffers: this.jobService.getAllPaged(0, 1),
+      candidates: this.candidateService.getAllPaged(0, 1)
+    }).subscribe({
+      next: ({ employees, pendingLeaves, pendingPresence, jobOffers, candidates }) => {
+        this.stats = {
+          employees: employees.totalElements,
+          pendingLeaves: pendingLeaves.totalElements,
+          pendingPresence: pendingPresence.totalElements,
+          jobOffers: jobOffers.totalElements,
+          candidates: candidates.totalElements
+        };
+        this.loading = false;
+      },
+      error: (error: Error) => {
+        this.error = error.message;
+        this.loading = false;
+      }
     });
-
-    this.candidateService.getAllPaged().subscribe(res => {
-      this.stats.candidates = res.totalElements;
-    });
   }
-
 }

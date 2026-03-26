@@ -191,6 +191,47 @@ getRole$(): Observable<string> {
     );
 }
 
+getCurrentUserId(): number | null {
+  const token = this.getToken();
+
+  if (!token) {
+    return this.readStoredNumericId();
+  }
+
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1] ?? '')) as Record<string, unknown>;
+    const claimKeys = ['employeeId', 'id', 'userId', 'sub'];
+
+    for (const key of claimKeys) {
+      const numericValue = this.toNumericId(payload[key]);
+
+      if (numericValue !== null) {
+        return numericValue;
+      }
+    }
+  } catch {
+    return this.readStoredNumericId();
+  }
+
+  return this.readStoredNumericId();
+}
+
+private readStoredNumericId(): number | null {
+  return this.toNumericId(localStorage.getItem('employeeId'));
+}
+
+private toNumericId(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === 'string' && /^\d+$/.test(value.trim())) {
+    return Number(value);
+  }
+
+  return null;
+}
+
 
   // ================= ERROR HANDLER =================
 

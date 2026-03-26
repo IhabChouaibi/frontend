@@ -63,7 +63,7 @@ export class Apply {
       next: (res) => {
         this.loading = false;
         alert('Application submitted successfully!');
-        this.router.navigate(['/public']);
+        this.router.navigate(['/']);
       },
       error: (err) => {
         this.loading = false;

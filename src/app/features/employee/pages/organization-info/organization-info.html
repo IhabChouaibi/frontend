@@ -1,0 +1,36 @@
+<section class="page-shell">
+  <div class="page-hero">
+    <div class="page-hero__content">
+      <span class="eyebrow">Organization</span>
+      <h1 class="page-title">Comprendre la structure, les equipes et les roles visibles.</h1>
+      <p class="page-copy">
+        Cette page consolide les departements et les jobs exposes par le service d organisation.
+      </p>
+    </div>
+  </div>
+
+  <app-loader *ngIf="loading"></app-loader>
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+
+  <div class="content-grid">
+    <article class="surface-card">
+      <h3 class="section-title">Departments</h3>
+      <div class="detail-list">
+        <div class="detail-item" *ngFor="let department of departments">
+          <strong>{{ department.name }}</strong>
+          <span>{{ department.code }}</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="surface-card">
+      <h3 class="section-title">Jobs</h3>
+      <div class="detail-list">
+        <div class="detail-item" *ngFor="let job of jobs">
+          <strong>{{ job.title }}</strong>
+          <span>{{ job.level || 'Standard' }}</span>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>

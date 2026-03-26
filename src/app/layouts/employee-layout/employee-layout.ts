@@ -10,7 +10,10 @@ import { SidebarItem } from '../../shared/components/sidebar/sidebar-item';
 export class EmployeeLayout {
   readonly sidebarItems: SidebarItem[] = [
     { label: 'Dashboard', route: '/employee/dashboard' },
-    { label: 'Leaves', route: '/employee/leave-request' },
+    { label: 'Profile', route: '/employee/profile' },
+    { label: 'Leave Request', route: '/employee/leave-request' },
+    { label: 'Leave History', route: '/employee/history' },
     { label: 'Presence', route: '/employee/presence' },
+    { label: 'Organization', route: '/employee/organization' },
   ];
 }

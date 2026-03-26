@@ -1,25 +1,41 @@
-<div class="page">
+<section class="page-shell">
+  <div class="page-hero">
+    <div class="page-hero__content">
+      <span class="eyebrow">Jobs</span>
+      <h1 class="page-title">Gerer les postes relies a la structure organisationnelle.</h1>
+    </div>
 
-  <h2>Jobs</h2>
+    <div class="hero-actions">
+      <app-button (click)="openCreate()">Add job</app-button>
+    </div>
+  </div>
 
-  <app-button (click)="showModal = true">Add Job</app-button>
+  <div *ngIf="error" class="error-message">{{ error }}</div>
 
-  <app-modal *ngIf="showModal" (close)="showModal = false">
+  <div class="dashboard-grid">
+    <article class="surface-card" *ngFor="let job of jobs">
+      <h3>{{ job.title }}</h3>
+      <p>{{ job.level || 'Standard level' }}</p>
+      <div class="section-actions">
+        <app-button variant="danger" (click)="delete(job)">Delete</app-button>
+      </div>
+    </article>
+  </div>
 
-    <form [formGroup]="form" (ngSubmit)="submit()">
-
-      <form-input label="Title" formControlName="title"></form-input>
-
-      <select formControlName="departmentId">
-        <option *ngFor="let d of departments" [value]="d.id">
-          {{ d.name }}
-        </option>
-      </select>
-
-      <app-button type="submit">Save</app-button>
-
+  <app-modal [visible]="showModal" title="Create job" (close)="showModal = false">
+    <form [formGroup]="form" (ngSubmit)="submit()" class="job-create-form">
+      <div class="field-grid">
+        <app-form-input label="Title" formControlName="title"></app-form-input>
+        <app-form-input label="Level" formControlName="level"></app-form-input>
+      </div>
+      <div class="field-stack">
+        <label for="departmentId">Department</label>
+        <select id="departmentId" formControlName="departmentId">
+          <option value="">Select department</option>
+          <option *ngFor="let department of departments" [value]="department.id">{{ department.name }}</option>
+        </select>
+      </div>
+      <app-button type="submit">Save job</app-button>
     </form>
-
   </app-modal>
-
-</div>
+</section>

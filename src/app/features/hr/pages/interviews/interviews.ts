@@ -1,5 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
+
 import { InterviewService } from '../../../../core/services/recruitment/interview';
+import { Interview } from '../../../../models/recruitment/interview';
 
 @Component({
   selector: 'app-interviews',
@@ -7,26 +9,23 @@ import { InterviewService } from '../../../../core/services/recruitment/intervie
   templateUrl: './interviews.html',
   styleUrl: './interviews.scss',
 })
-export class Interviews implements OnInit {
-  interviews: any[] = [];
+export class Interviews {
+  interviews: Interview[] = [];
   showModal = false;
-  selectedApplicationId!: number;
+  selectedApplicationId = 0;
 
-  constructor(private interviewService: InterviewService) {}
+  constructor(private readonly interviewService: InterviewService) {}
 
   ngOnInit(): void {
     this.load();
   }
 
-  load() {
-    this.interviewService.getAllPaged().subscribe(res => {
-      this.interviews = res.content;
-    });
-  }
-
-  openModal(appId: number) {
-    this.selectedApplicationId = appId;
+  openModal(applicationId: number): void {
+    this.selectedApplicationId = applicationId;
     this.showModal = true;
   }
 
+  load(): void {
+    this.interviewService.getAllPaged().subscribe((res) => this.interviews = res.content);
+  }
 }

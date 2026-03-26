@@ -1,0 +1,35 @@
+<section class="page-shell">
+  <div class="page-hero">
+    <div class="page-hero__content">
+      <span class="eyebrow">Leave types</span>
+      <h1 class="page-title">Configurer les types de conge et leurs regles principales.</h1>
+    </div>
+
+    <div class="hero-actions">
+      <app-button (click)="openCreate()">Add leave type</app-button>
+    </div>
+  </div>
+
+  <app-loader *ngIf="loading"></app-loader>
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+
+  <article class="surface-card">
+    <app-table [data]="leaveTypes" [columns]="['Name', 'Paid', 'Approval', 'Document', 'Max days', 'Actions']">
+      <ng-template let-item>
+        <td>{{ item.name }}</td>
+        <td>{{ item.paid }}</td>
+        <td>{{ item.requiresApproval }}</td>
+        <td>{{ item.requiresDocument }}</td>
+        <td>{{ item.maxDaysPerYear || '-' }}</td>
+        <td class="row-actions">
+          <app-button variant="secondary" (click)="openEdit(item)">Edit</app-button>
+          <app-button variant="danger" (click)="delete(item)">Delete</app-button>
+        </td>
+      </ng-template>
+    </app-table>
+  </article>
+
+  <app-modal [visible]="showModal" [title]="selectedId ? 'Edit leave type' : 'Create leave type'" (close)="showModal = false">
+    <app-leave-type-form [form]="form" (submitted)="submit()"></app-leave-type-form>
+  </app-modal>
+</section>

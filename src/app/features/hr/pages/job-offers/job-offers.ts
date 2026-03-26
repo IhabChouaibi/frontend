@@ -1,5 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
+
 import { JobOfferService } from '../../../../core/services/recruitment/job-offer';
+import { JobOffer } from '../../../../models/recruitment/job-offer';
 
 @Component({
   selector: 'app-job-offers',
@@ -7,24 +9,36 @@ import { JobOfferService } from '../../../../core/services/recruitment/job-offer
   templateUrl: './job-offers.html',
   styleUrl: './job-offers.scss',
 })
-export class JobOffers implements OnInit{
-  jobs: any[] = [];
+export class JobOffers {
+  jobs: JobOffer[] = [];
+  selectedJob?: JobOffer;
   showForm = false;
 
-  constructor(private jobService: JobOfferService) {}
+  constructor(private readonly jobService: JobOfferService) {}
 
   ngOnInit(): void {
     this.load();
   }
 
-  load() {
-    this.jobService.getAllPaged().subscribe(res => {
-      this.jobs = res.content;
-    });
+  openCreate(): void {
+    this.selectedJob = undefined;
+    this.showForm = true;
   }
 
-  delete(id: number) {
+  openEdit(job: JobOffer): void {
+    this.selectedJob = job;
+    this.showForm = true;
+  }
+
+  delete(id?: number): void {
+    if (!id) {
+      return;
+    }
+
     this.jobService.delete(id).subscribe(() => this.load());
   }
 
+  load(): void {
+    this.jobService.getAllPaged().subscribe((res) => this.jobs = res.content);
+  }
 }

@@ -1,3 +1,12 @@
-<div class="card">
-  <h2>Welcome {{ username }}</h2>
-</div>
+<article class="profile-card">
+  <div>
+    <span class="eyebrow">Employee profile</span>
+    <h3>{{ employee?.firstName || username || 'Employee' }} {{ employee?.lastName || '' }}</h3>
+    <p>{{ employee?.email || 'Profile information will appear here once loaded.' }}</p>
+  </div>
+
+  <div class="profile-card__meta">
+    <span class="status-badge status-badge--active">{{ employee?.status || 'Active' }}</span>
+    <span>{{ employee?.phone || 'No phone registered' }}</span>
+  </div>
+</article>

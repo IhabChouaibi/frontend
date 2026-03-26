@@ -1,1 +1,351 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --font-sans: "Segoe UI Variable Text", "Segoe UI", "Trebuchet MS", sans-serif;
+  --font-display: "Bahnschrift", "Segoe UI Variable Display", "Segoe UI", sans-serif;
+  --color-ink: #102033;
+  --color-muted: #60708a;
+  --color-surface: #f4f7fb;
+  --color-surface-strong: #ffffff;
+  --color-line: rgba(16, 32, 51, 0.1);
+  --color-brand: #0f766e;
+  --color-brand-strong: #0b5c56;
+  --color-accent: #f59e0b;
+  --color-danger: #c2410c;
+  --color-success: #15803d;
+  --color-shadow: 0 22px 54px rgba(15, 23, 42, 0.1);
+  --radius-xl: 28px;
+  --radius-lg: 20px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --content-width: 1180px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background:
+    radial-gradient(circle at top left, rgba(15, 118, 110, 0.12), transparent 30%),
+    linear-gradient(180deg, #f7fafc 0%, #eef3f9 100%);
+  color: var(--color-ink);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-family: var(--font-display);
+  letter-spacing: -0.03em;
+}
+
+p {
+  margin: 0;
+  color: var(--color-muted);
+  line-height: 1.7;
+}
+
+.page-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.page-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  align-items: flex-start;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(240, 248, 255, 0.92));
+  box-shadow: var(--color-shadow);
+}
+
+.page-hero__content {
+  max-width: 680px;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(15, 118, 110, 0.09);
+  color: var(--color-brand-strong);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.page-title {
+  margin-top: 1rem;
+  font-size: clamp(2rem, 3vw, 3rem);
+}
+
+.page-copy {
+  margin-top: 1rem;
+  max-width: 60ch;
+}
+
+.hero-actions,
+.section-actions,
+.toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.stats-grid,
+.content-grid,
+.dashboard-grid,
+.cards-grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.stats-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.content-grid {
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.8fr);
+}
+
+.dashboard-grid {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.surface-card,
+.metric-card,
+.info-card {
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-line);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(12px);
+}
+
+.metric-card__value {
+  display: block;
+  margin-top: 1rem;
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
+  font-family: var(--font-display);
+  color: var(--color-ink);
+}
+
+.metric-card__meta {
+  margin-top: 0.35rem;
+  font-size: 0.95rem;
+}
+
+.section-title {
+  font-size: 1.35rem;
+}
+
+.section-subtitle {
+  margin-top: 0.4rem;
+}
+
+.field-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.field-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field-stack label {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.field-stack input,
+.field-stack select,
+.field-stack textarea,
+.search-input {
+  width: 100%;
+  min-height: 50px;
+  padding: 0.95rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(96, 112, 138, 0.22);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-ink);
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.field-stack textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.field-stack input:focus,
+.field-stack select:focus,
+.field-stack textarea:focus,
+.search-input:focus {
+  outline: none;
+  border-color: rgba(15, 118, 110, 0.55);
+  box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+}
+
+.inline-feedback,
+.error-message,
+.success-message,
+.empty-state {
+  padding: 0.95rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+}
+
+.inline-feedback {
+  background: rgba(245, 158, 11, 0.1);
+  color: #9a6700;
+}
+
+.error-message {
+  background: rgba(194, 65, 12, 0.1);
+  color: var(--color-danger);
+}
+
+.success-message {
+  background: rgba(21, 128, 61, 0.1);
+  color: var(--color-success);
+}
+
+.empty-state {
+  background: rgba(96, 112, 138, 0.08);
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 104px;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.status-badge--approved,
+.status-badge--present,
+.status-badge--validated,
+.status-badge--active {
+  background: rgba(21, 128, 61, 0.12);
+  color: var(--color-success);
+}
+
+.status-badge--pending,
+.status-badge--late,
+.status-badge--scheduled {
+  background: rgba(245, 158, 11, 0.12);
+  color: #9a6700;
+}
+
+.status-badge--rejected,
+.status-badge--absent,
+.status-badge--inactive {
+  background: rgba(194, 65, 12, 0.12);
+  color: var(--color-danger);
+}
+
+.status-badge--remote,
+.status-badge--half_day,
+.status-badge--draft {
+  background: rgba(59, 130, 246, 0.12);
+  color: #1d4ed8;
+}
+
+.table-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.detail-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid rgba(96, 112, 138, 0.12);
+}
+
+.detail-item:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.detail-item strong {
+  color: var(--color-ink);
+}
+
+@media (max-width: 900px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-hero {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-hero {
+    padding: 1.25rem;
+  }
+
+  .page-title {
+    font-size: 1.85rem;
+  }
+}

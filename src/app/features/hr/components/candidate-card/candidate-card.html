@@ -1,9 +1,13 @@
-<div class="card">
-  <h3>{{ candidate.firstName }}</h3>
-  <p>{{ candidate.email }}</p>
-  <p>{{ candidate.phone }}</p>
-
-  <div class="actions">
-    <app-button (click)="downloadCv()">Download CV</app-button>
+<article class="candidate-card">
+  <div>
+    <h3>{{ candidate.firstName }} {{ candidate.lastName }}</h3>
+    <p>{{ candidate.email }}</p>
+    <p>{{ candidate.currentPosition || 'Candidate' }}</p>
   </div>
-</div>
+
+  <div class="candidate-card__meta">
+    <span>{{ candidate.phone || '-' }}</span>
+    <span>{{ candidate.yearsOfExperience || 0 }} years</span>
+    <app-button variant="secondary" (click)="downloadCv()">Download CV</app-button>
+  </div>
+</article>

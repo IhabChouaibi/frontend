@@ -1,5 +1,18 @@
-<section class="history-page">
-  <h2>Leave History</h2>
+<section class="page-shell">
+  <div class="page-hero">
+    <div class="page-hero__content">
+      <span class="eyebrow">Leave history</span>
+      <h1 class="page-title">Suivre l historique complet de vos demandes de conge.</h1>
+      <p class="page-copy">
+        Filtrez rapidement vos demandes et consultez leur statut actuel en un coup d oeil.
+      </p>
+    </div>
+
+    <div class="surface-card history-side">
+      <strong>{{ leaves.length }}</strong>
+      <p>Demandes chargees sur la page courante.</p>
+    </div>
+  </div>
 
   <input
     type="search"
@@ -9,24 +22,17 @@
   />
 
   <app-loader *ngIf="loading"></app-loader>
-  <p class="error" *ngIf="error">{{ error }}</p>
+  <div *ngIf="error" class="error-message">{{ error }}</div>
 
-  <app-table [data]="leaves" [columns]="['id', 'startDate', 'endDate', 'status']">
-    <ng-template let-item>
-      <td>{{ item.id }}</td>
-      <td>{{ item.startDate }}</td>
-      <td>{{ item.endDate }}</td>
-      <td>{{ item.status }}</td>
-    </ng-template>
-  </app-table>
+  <article class="surface-card">
+    <app-history-table [leaves]="leaves"></app-history-table>
+  </article>
 
-  <div class="pagination" *ngIf="!loading && totalPages > 0">
-    <button
-      type="button"
-      *ngFor="let pageIndex of [].constructor(totalPages); let index = index"
-      (click)="changePage(index)"
-    >
-      {{ index + 1 }}
-    </button>
+  <div class="table-footer" *ngIf="totalPages > 0">
+    <span>Page {{ page + 1 }} / {{ totalPages }}</span>
+    <div class="pagination-controls">
+      <app-button variant="ghost" (click)="changePage(-1)" [disabled]="page === 0">Previous</app-button>
+      <app-button variant="secondary" (click)="changePage(1)" [disabled]="page + 1 >= totalPages">Next</app-button>
+    </div>
   </div>
 </section>

@@ -1,1 +1,38 @@
-<p>applications works!</p>
+<section class="page-shell">
+  <div class="page-hero">
+    <div class="page-hero__content">
+      <span class="eyebrow">Applications</span>
+      <h1 class="page-title">Analyser les candidatures et planifier la suite du process.</h1>
+    </div>
+  </div>
+
+  <article class="surface-card">
+    <table class="app-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Candidate</th>
+          <th>Job offer</th>
+          <th>Status</th>
+          <th>Applied date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <app-application-row
+          *ngFor="let application of applications"
+          [application]="application"
+          (refresh)="loadApplications()"
+          (schedule)="schedule($event)"
+        ></app-application-row>
+      </tbody>
+    </table>
+  </article>
+
+  <app-interview-modal
+    [visible]="showInterviewModal"
+    [applicationId]="selectedApplicationId"
+    (close)="showInterviewModal = false"
+    (scheduled)="loadApplications()"
+  ></app-interview-modal>
+</section>

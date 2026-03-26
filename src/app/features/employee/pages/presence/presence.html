@@ -1,46 +1,31 @@
-<div class="page">
+<section class="page-shell">
+  <div class="page-hero">
+    <div class="page-hero__content">
+      <span class="eyebrow">Presence</span>
+      <h1 class="page-title">Pointer, suivre l historique et verifier vos statuts de presence.</h1>
+      <p class="page-copy">
+        Les actions de check-in et check-out sont reliees au service de presence existant.
+      </p>
+    </div>
 
-  <h2>Présence / Pointage</h2>
-
-  <!-- ACTIONS -->
-  <div class="actions">
-    <app-button (click)="checkIn()" [disabled]="loading">
-      Check In
-    </app-button>
-
-    <app-button (click)="checkOut()" [disabled]="loading">
-      Check Out
-    </app-button>
+    <div class="hero-actions">
+      <app-button (click)="checkIn()" [loading]="loading">Check In</app-button>
+      <app-button variant="secondary" (click)="checkOut()" [loading]="loading">Check Out</app-button>
+    </div>
   </div>
 
-  <app-loader *ngIf="loading"></app-loader>
+  <div *ngIf="message" class="success-message">{{ message }}</div>
+  <div *ngIf="error" class="error-message">{{ error }}</div>
 
-  <div class="success" *ngIf="message">{{ message }}</div>
-  <div class="error" *ngIf="error">{{ error }}</div>
-
-  <!-- HISTORY -->
-  <h3>Historique</h3>
-
-  <app-table
-    [data]="presences"
-    [columns]="['date','checkIn','checkOut','status']">
-
-
-    <ng-template let-item>
-      <td>{{ item.date }}</td>
-      <td>{{ item.checkIn }}</td>
-      <td>{{ item.checkOut }}</td>
-      <td>{{ item.status }}</td>
-    </ng-template>
-
-  </app-table>
-
-  <!-- PAGINATION -->
-  <div class="pagination">
-    <button *ngFor="let p of [].constructor(totalPages); let i = index"
-            (click)="changePage(i)">
-      {{ i + 1 }}
-    </button>
+  <div class="cards-grid">
+    <app-presence-card *ngFor="let item of presences" [presence]="item"></app-presence-card>
   </div>
 
-</div>
+  <div class="table-footer" *ngIf="totalPages > 0">
+    <span>Page {{ page + 1 }} / {{ totalPages }}</span>
+    <div class="pagination-controls">
+      <app-button variant="ghost" (click)="changePage(-1)" [disabled]="page === 0">Previous</app-button>
+      <app-button variant="secondary" (click)="changePage(1)" [disabled]="page + 1 >= totalPages">Next</app-button>
+    </div>
+  </div>
+</section>

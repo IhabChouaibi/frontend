@@ -1,14 +1,30 @@
-<app-button (click)="openModal(1)">Schedule Interview</app-button>
+<section class="page-shell">
+  <div class="page-hero">
+    <div class="page-hero__content">
+      <span class="eyebrow">Interviews</span>
+      <h1 class="page-title">Programmer les entretiens et suivre les rendez-vous deja planifies.</h1>
+    </div>
+    <div class="hero-actions">
+      <app-button (click)="openModal(1)">Schedule interview</app-button>
+    </div>
+  </div>
 
-<ul>
-  <li *ngFor="let i of interviews">
-    {{ i.date }} - {{ i.location }}
-  </li>
-</ul>
+  <div class="dashboard-grid">
+    <article class="surface-card" *ngFor="let interview of interviews">
+      <h3>Application #{{ interview.applicationId }}</h3>
+      <p>{{ interview.interviewDate }}</p>
+      <div class="detail-list compact">
+        <div class="detail-item"><strong>Type</strong><span>{{ interview.type }}</span></div>
+        <div class="detail-item"><strong>Status</strong><span>{{ interview.status || 'SCHEDULED' }}</span></div>
+        <div class="detail-item"><strong>Interviewer</strong><span>{{ interview.interviewerId }}</span></div>
+      </div>
+    </article>
+  </div>
 
-<app-interview-modal
-  [visible]="showModal"
-  [applicationId]="selectedApplicationId"
-  (close)="showModal = false"
-  (scheduled)="load()">
-</app-interview-modal>
+  <app-interview-modal
+    [visible]="showModal"
+    [applicationId]="selectedApplicationId"
+    (close)="showModal = false"
+    (scheduled)="load()"
+  ></app-interview-modal>
+</section>

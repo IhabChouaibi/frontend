@@ -1,0 +1,30 @@
+<form [formGroup]="form" (ngSubmit)="submitted.emit()" class="employee-form">
+  <div class="field-grid">
+    <app-form-input label="First name" formControlName="firstName" placeholder="First name"></app-form-input>
+    <app-form-input label="Last name" formControlName="lastName" placeholder="Last name"></app-form-input>
+    <app-form-input label="Email" formControlName="email" placeholder="Email"></app-form-input>
+    <app-form-input label="Phone" formControlName="phone" placeholder="Phone"></app-form-input>
+    <app-form-input label="Hire date" type="date" formControlName="hireDate"></app-form-input>
+    <app-form-input label="Status" formControlName="status" placeholder="ACTIVE"></app-form-input>
+  </div>
+
+  <div class="field-grid">
+    <div class="field-stack">
+      <label for="departmentId">Department</label>
+      <select id="departmentId" formControlName="departmentId">
+        <option value="">Select department</option>
+        <option *ngFor="let department of departments" [value]="department.id">{{ department.name }}</option>
+      </select>
+    </div>
+
+    <div class="field-stack">
+      <label for="jobId">Job</label>
+      <select id="jobId" formControlName="jobId">
+        <option value="">Select job</option>
+        <option *ngFor="let job of jobs" [value]="job.id">{{ job.title }}</option>
+      </select>
+    </div>
+  </div>
+
+  <app-button type="submit" [loading]="loading">Save employee</app-button>
+</form>

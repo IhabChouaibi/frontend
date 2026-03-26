@@ -1,14 +1,31 @@
-<app-button (click)="showForm = true">Add Job</app-button>
+<section class="page-shell">
+  <div class="page-hero">
+    <div class="page-hero__content">
+      <span class="eyebrow">Recruitment</span>
+      <h1 class="page-title">Publier et maintenir les offres d emploi de la societe.</h1>
+    </div>
 
-<div class="grid">
-  <div class="card" *ngFor="let job of jobs">
-    <h3>{{ job.title }}</h3>
-    <p>{{ job.description }}</p>
-
-    <app-button (click)="delete(job.id)">Delete</app-button>
+    <div class="hero-actions">
+      <app-button (click)="openCreate()">New offer</app-button>
+    </div>
   </div>
-</div>
 
-<app-modal [visible]="showForm" title="Job Form" (close)="showForm = false">
-  <app-job-form (saved)="load(); showForm = false"></app-job-form>
-</app-modal>
+  <div class="dashboard-grid">
+    <article class="surface-card" *ngFor="let job of jobs">
+      <h3>{{ job.title }}</h3>
+      <p>{{ job.description | truncate: 120 }}</p>
+      <div class="detail-list compact">
+        <div class="detail-item"><strong>Location</strong><span>{{ job.location || '-' }}</span></div>
+        <div class="detail-item"><strong>Type</strong><span>{{ job.employmentType || '-' }}</span></div>
+      </div>
+      <div class="section-actions">
+        <app-button variant="secondary" (click)="openEdit(job)">Edit</app-button>
+        <app-button variant="danger" (click)="delete(job.id)">Delete</app-button>
+      </div>
+    </article>
+  </div>
+
+  <app-modal [visible]="showForm" [title]="selectedJob ? 'Edit job offer' : 'Create job offer'" (close)="showForm = false">
+    <app-job-form [job]="selectedJob" (saved)="load(); showForm = false"></app-job-form>
+  </app-modal>
+</section>

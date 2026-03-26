@@ -1,1 +1,42 @@
-<p>profile works!</p>
+<section class="page-shell">
+  <div class="page-hero">
+    <div class="page-hero__content">
+      <span class="eyebrow">Employee workspace</span>
+      <h1 class="page-title">Votre espace personnel, informations RH et organisationnelles reunies.</h1>
+      <p class="page-copy">
+        Consultez votre profil, votre rattachement organisationnel et les informations
+        utiles sans quitter votre espace Employee.
+      </p>
+    </div>
+  </div>
+
+  <app-loader *ngIf="loading"></app-loader>
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+
+  <app-profile-card [employee]="employee" [username]="username"></app-profile-card>
+
+  <div class="content-grid">
+    <article class="surface-card">
+      <h3 class="section-title">Informations personnelles</h3>
+      <p class="section-subtitle">Les donnees principales du dossier employee charge depuis le service backend.</p>
+
+      <div class="detail-list">
+        <div class="detail-item"><strong>Email</strong><span>{{ employee?.email || '-' }}</span></div>
+        <div class="detail-item"><strong>Telephone</strong><span>{{ employee?.phone || '-' }}</span></div>
+        <div class="detail-item"><strong>Date d embauche</strong><span>{{ employee?.hireDate || '-' }}</span></div>
+        <div class="detail-item"><strong>Statut</strong><span>{{ employee?.status || 'ACTIVE' }}</span></div>
+      </div>
+    </article>
+
+    <article class="surface-card">
+      <h3 class="section-title">Organisation</h3>
+      <p class="section-subtitle">Votre position dans la structure actuelle.</p>
+
+      <div class="detail-list">
+        <div class="detail-item"><strong>Department</strong><span>{{ departmentName }}</span></div>
+        <div class="detail-item"><strong>Job</strong><span>{{ jobTitle }}</span></div>
+        <div class="detail-item"><strong>Username</strong><span>{{ username || '-' }}</span></div>
+      </div>
+    </article>
+  </div>
+</section>

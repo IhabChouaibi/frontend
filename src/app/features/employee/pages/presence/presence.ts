@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
-import {PresenceService} from '../../../../core/services/presence-service/presence-service';
-import {Presence} from '../../../../models/presence-service/presence';
+
+import { AuthService } from '../../../../core/services/auth-service';
+import { PresenceService } from '../../../../core/services/presence-service/presence.service';
+import { Presence } from '../../../../models/presence-service/presence';
 
 @Component({
   selector: 'app-presence',
@@ -12,73 +14,96 @@ export class PresenceComponent {
   loading = false;
   message = '';
   error = '';
-
   presences: Presence[] = [];
-
   page = 0;
   totalPages = 0;
 
-  employeeId = 1; // 🔥 à remplacer par AuthService
-
-  constructor(private presenceService: PresenceService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly presenceService: PresenceService
+  ) {}
 
   ngOnInit(): void {
     this.loadHistory();
   }
 
-  checkIn() {
+  checkIn(): void {
+    const employeeId = this.authService.getCurrentUserId();
+
+    if (!employeeId) {
+      this.error = 'Employee id is missing.';
+      return;
+    }
+
     this.loading = true;
+    this.message = '';
+    this.error = '';
 
-    const request = {
-      employeeId: this.employeeId
-    };
-
-    this.presenceService.checkIn(request)
-      .subscribe({
-        next: () => {
-          this.message = 'Check-in successful';
-          this.loadHistory();
-          this.loading = false;
-        },
-        error: () => {
-          this.error = 'Check-in failed';
-          this.loading = false;
-        }
-      });
+    this.presenceService.checkIn({ employeeId }).subscribe({
+      next: () => {
+        this.message = 'Check-in successful.';
+        this.loading = false;
+        this.loadHistory();
+      },
+      error: (error: Error) => {
+        this.error = error.message;
+        this.loading = false;
+      }
+    });
   }
 
-  checkOut() {
+  checkOut(): void {
+    const employeeId = this.authService.getCurrentUserId();
+
+    if (!employeeId) {
+      this.error = 'Employee id is missing.';
+      return;
+    }
+
     this.loading = true;
+    this.message = '';
+    this.error = '';
 
-    const request = {
-      employeeId: this.employeeId
-    };
-
-    this.presenceService.checkOut(request)
-      .subscribe({
-        next: () => {
-          this.message = 'Check-out successful';
-          this.loadHistory();
-          this.loading = false;
-        },
-        error: () => {
-          this.error = 'Check-out failed';
-          this.loading = false;
-        }
-      });
+    this.presenceService.checkOut({ employeeId }).subscribe({
+      next: () => {
+        this.message = 'Check-out successful.';
+        this.loading = false;
+        this.loadHistory();
+      },
+      error: (error: Error) => {
+        this.error = error.message;
+        this.loading = false;
+      }
+    });
   }
 
-  loadHistory() {
-    this.presenceService.getEmployeeHistoryPaged(this.employeeId, this.page, 10)
-      .subscribe(res => {
-        this.presences = res.content;
-        this.totalPages = res.totalPages;
-      });
-  }
+  changePage(step: number): void {
+    const nextPage = this.page + step;
 
-  changePage(p: number) {
-    this.page = p;
+    if (nextPage < 0 || nextPage >= this.totalPages) {
+      return;
+    }
+
+    this.page = nextPage;
     this.loadHistory();
   }
 
+  private loadHistory(): void {
+    const employeeId = this.authService.getCurrentUserId();
+
+    if (!employeeId) {
+      this.error = 'Employee id is missing.';
+      return;
+    }
+
+    this.presenceService.getEmployeeHistoryPaged(employeeId, this.page, 10).subscribe({
+      next: (res) => {
+        this.presences = res.content;
+        this.totalPages = res.totalPages;
+      },
+      error: (error: Error) => {
+        this.error = error.message;
+      }
+    });
+  }
 }

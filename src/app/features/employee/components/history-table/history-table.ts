@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
+
+import { Leave } from '../../../../models/leave-service/leave';
 
 @Component({
   selector: 'app-history-table',
@@ -7,5 +9,5 @@ import { Component } from '@angular/core';
   styleUrl: './history-table.scss',
 })
 export class HistoryTable {
-
+  @Input() leaves: Leave[] = [];
 }

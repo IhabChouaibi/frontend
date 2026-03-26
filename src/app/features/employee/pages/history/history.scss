@@ -1,66 +1,9 @@
-.page {
-  padding: 20px;
+.history-side {
+  min-width: 180px;
 }
 
-h2 {
-  margin-bottom: 20px;
-}
-
-/* Table */
-app-table {
-  margin-top: 15px;
-}
-
-/* Status badge */
-.status {
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-
-  &.approved {
-    background: #e6f4ea;
-    color: #2e7d32;
-  }
-
-  &.pending {
-    background: #fff4e5;
-    color: #ef6c00;
-  }
-
-  &.rejected {
-    background: #fdecea;
-    color: #c62828;
-  }
-}
-
-/* Empty state */
-.empty {
-  text-align: center;
-  margin-top: 20px;
-  color: #777;
-}
-
-/* Pagination */
-.pagination {
-  margin-top: 15px;
-
-  button {
-    margin-right: 5px;
-    padding: 5px 10px;
-    border-radius: 6px;
-    border: none;
-    background: #eee;
-    cursor: pointer;
-    transition: 0.2s;
-
-    &:hover {
-      background: #ccc;
-    }
-
-    &.active {
-      background: #3f51b5;
-      color: white;
-    }
-  }
+.history-side strong {
+  display: block;
+  font-size: 2rem;
+  color: var(--color-ink);
 }

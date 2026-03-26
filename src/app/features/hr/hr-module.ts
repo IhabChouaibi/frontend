@@ -17,6 +17,9 @@ import { Jobs } from './pages/jobs/jobs';
 import { LeaveValidation } from './pages/leave-validation/leave-validation';
 import { Employees } from './pages/employees/employees';
 import { PresenceList } from './pages/presence-list/presence-list';
+import { EmployeeFormComponent } from './components/employee-form/employee-form';
+import { LeaveTypeFormComponent } from './components/leave-type-form/leave-type-form';
+import { LeaveTypes } from './pages/leave-types/leave-types';
 
 
 @NgModule({
@@ -35,6 +38,9 @@ import { PresenceList } from './pages/presence-list/presence-list';
     LeaveValidation,
     Employees,
     PresenceList,
+    EmployeeFormComponent,
+    LeaveTypeFormComponent,
+    LeaveTypes,
 
 
   ],

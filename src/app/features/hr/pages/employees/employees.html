@@ -1,49 +1,52 @@
-<section class="employees-page">
-  <div class="page-header">
-    <div>
-      <h2>Employees</h2>
-      <p>{{ totalElements }} employee(s)</p>
+<section class="page-shell">
+  <div class="page-hero">
+    <div class="page-hero__content">
+      <span class="eyebrow">Employees</span>
+      <h1 class="page-title">Creer et administrer les collaborateurs dans une interface propre.</h1>
+      <p class="page-copy">{{ totalElements }} employee(s) reference(s) dans le systeme.</p>
     </div>
 
-    <input
-      type="search"
-      class="search-input"
-      [formControl]="searchControl"
-      placeholder="Search by name, email, or user ID"
-    />
+    <div class="hero-actions">
+      <input type="search" class="search-input" [formControl]="searchControl" placeholder="Search employees" />
+      <app-button (click)="openCreate()">New employee</app-button>
+    </div>
   </div>
 
   <app-loader *ngIf="loading"></app-loader>
-  <p class="error" *ngIf="error">{{ error }}</p>
+  <div *ngIf="error" class="error-message">{{ error }}</div>
 
-  <table class="employees-table" *ngIf="!loading">
-    <thead>
-      <tr>
-        <th *ngFor="let column of tableColumns">{{ column }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let employee of employees">
-        <td>{{ employee.id }}</td>
-        <td>{{ employee.firstName }}</td>
-        <td>{{ employee.lastName }}</td>
-        <td>{{ employee.email }}</td>
-        <td>{{ employee.departmentCode || '-' }}</td>
-        <td>{{ employee.jobTitle || '-' }}</td>
-        <td class="actions-cell">
-          <app-button (click)="onEdit(employee, $event)">Edit</app-button>
-          <app-button (click)="onDelete(employee, $event)">Delete</app-button>
+  <article class="surface-card">
+    <app-table [data]="employees" [columns]="['ID', 'First name', 'Last name', 'Email', 'Department', 'Job', 'Actions']">
+      <ng-template let-item>
+        <td>#{{ item.id }}</td>
+        <td>{{ item.firstName }}</td>
+        <td>{{ item.lastName }}</td>
+        <td>{{ item.email }}</td>
+        <td>{{ item.departmentCode || '-' }}</td>
+        <td>{{ item.jobTitle || '-' }}</td>
+        <td class="row-actions">
+          <app-button variant="secondary" (click)="openEdit(item)">Edit</app-button>
+          <app-button variant="danger" (click)="delete(item)">Delete</app-button>
         </td>
-      </tr>
-      <tr *ngIf="employees.length === 0">
-        <td colspan="7" class="empty-state">No employees found.</td>
-      </tr>
-    </tbody>
-  </table>
+      </ng-template>
+    </app-table>
+  </article>
 
-  <div class="pagination" *ngIf="!loading && totalPages > 0">
-    <app-button (click)="previousPage()" [disabled]="page === 0">Previous</app-button>
+  <div class="table-footer" *ngIf="totalPages > 0">
     <span>Page {{ page + 1 }} / {{ totalPages }}</span>
-    <app-button (click)="nextPage()" [disabled]="page + 1 >= totalPages">Next</app-button>
+    <div class="pagination-controls">
+      <app-button variant="ghost" (click)="changePage(-1)" [disabled]="page === 0">Previous</app-button>
+      <app-button variant="secondary" (click)="changePage(1)" [disabled]="page + 1 >= totalPages">Next</app-button>
+    </div>
   </div>
+
+  <app-modal [visible]="showModal" [title]="selectedId ? 'Edit employee' : 'Create employee'" (close)="showModal = false">
+    <app-employee-form
+      [form]="form"
+      [departments]="departments"
+      [jobs]="jobs"
+      [loading]="saving"
+      (submitted)="submit()"
+    ></app-employee-form>
+  </app-modal>
 </section>

@@ -1,4 +1,12 @@
-<button [type]="type" [disabled]="disabled || loading" class="app-btn">
+<button
+  [type]="type"
+  [disabled]="disabled || loading"
+  class="app-btn"
+  [class.app-btn--secondary]="variant === 'secondary'"
+  [class.app-btn--ghost]="variant === 'ghost'"
+  [class.app-btn--danger]="variant === 'danger'"
+  [class.app-btn--full]="fullWidth"
+>
   <ng-container *ngIf="!loading"><ng-content></ng-content></ng-container>
-  <ng-container *ngIf="loading">Loading...</ng-container>
+  <ng-container *ngIf="loading">Chargement...</ng-container>
 </button>

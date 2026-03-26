@@ -11,6 +11,9 @@ import { HistoryTable } from './components/history-table/history-table';
 import { SharedModule } from '../../shared/shared-module';
 import {FormsModule} from '@angular/forms';
 import { PresenceComponent} from './pages/presence/presence';
+import { StatusBadgeComponent } from './components/status-badge/status-badge';
+import { PresenceCardComponent } from './components/presence-card/presence-card';
+import { OrganizationInfoComponent } from './pages/organization-info/organization-info';
 
 
 @NgModule({
@@ -22,6 +25,9 @@ import { PresenceComponent} from './pages/presence/presence';
     LeaveForm,
     HistoryTable,
     PresenceComponent,
+    StatusBadgeComponent,
+    PresenceCardComponent,
+    OrganizationInfoComponent,
   ],
   imports: [
     SharedModule,

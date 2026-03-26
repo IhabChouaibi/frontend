@@ -1,36 +1,29 @@
-.apply-container {
-  max-width: 500px;
-  margin: 40px auto;
-  padding: 20px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+.apply-page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
 
-  h2 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
+.apply-card {
+  padding: 2rem;
+  border-radius: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 28px 54px rgba(15, 23, 42, 0.08);
+}
 
-  .form-group {
-    margin-bottom: 15px;
+.apply-card__intro h2 {
+  margin-top: 0.9rem;
+  font-size: clamp(2rem, 3vw, 2.8rem);
+}
 
-    label {
-      display: block;
-      font-weight: 500;
-      margin-bottom: 5px;
-    }
+.apply-card__intro p {
+  margin-top: 1rem;
+  max-width: 60ch;
+}
 
-    input[type="file"] {
-      width: 100%;
-    }
-
-    small {
-      color: red;
-    }
-  }
-
-  app-button {
-    width: 100%;
-    margin-top: 10px;
-  }
+.apply-form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
 }

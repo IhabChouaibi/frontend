@@ -1,36 +1,38 @@
-<section class="leave-validation-page">
-  <h2>Leave Requests</h2>
+<section class="page-shell">
+  <div class="page-hero">
+    <div class="page-hero__content">
+      <span class="eyebrow">Leave validations</span>
+      <h1 class="page-title">Valider rapidement les demandes de conge en attente.</h1>
+      <p class="page-copy">Recherche, decision et suivi dans une seule table operationnelle.</p>
+    </div>
 
-  <input
-    type="search"
-    class="search-input"
-    [formControl]="searchControl"
-    placeholder="Search pending leaves"
-  />
+    <input type="search" class="search-input" [formControl]="searchControl" placeholder="Search pending leaves" />
+  </div>
 
   <app-loader *ngIf="loading"></app-loader>
-  <p class="error" *ngIf="error">{{ error }}</p>
+  <div *ngIf="error" class="error-message">{{ error }}</div>
 
-  <app-table [data]="requests" [columns]="['id', 'employeeId', 'startDate', 'endDate', 'actions']">
-    <ng-template let-item>
-      <td>{{ item.id }}</td>
-      <td>{{ item.employeeId }}</td>
-      <td>{{ item.startDate }}</td>
-      <td>{{ item.endDate }}</td>
-      <td>
-        <app-button (click)="approve(item.id, $event)">Approve</app-button>
-        <app-button (click)="reject(item.id, $event)">Reject</app-button>
-      </td>
-    </ng-template>
-  </app-table>
+  <article class="surface-card">
+    <app-table [data]="requests" [columns]="['ID', 'Employee', 'Period', 'Type', 'Status', 'Actions']">
+      <ng-template let-item>
+        <td>#{{ item.id }}</td>
+        <td>{{ item.employeeId }}</td>
+        <td>{{ item.startDate }} - {{ item.endDate }}</td>
+        <td>{{ item.leaveTypeId }}</td>
+        <td><span class="status-badge status-badge--pending">{{ item.status || 'PENDING' }}</span></td>
+        <td class="row-actions">
+          <app-button variant="secondary" (click)="approve(item.id)">Approve</app-button>
+          <app-button variant="danger" (click)="reject(item.id)">Reject</app-button>
+        </td>
+      </ng-template>
+    </app-table>
+  </article>
 
-  <div class="pagination" *ngIf="!loading && totalPages > 0">
-    <button
-      type="button"
-      *ngFor="let pageIndex of [].constructor(totalPages); let index = index"
-      (click)="changePage(index)"
-    >
-      {{ index + 1 }}
-    </button>
+  <div class="table-footer" *ngIf="totalPages > 0">
+    <span>Page {{ page + 1 }} / {{ totalPages }}</span>
+    <div class="pagination-controls">
+      <app-button variant="ghost" (click)="changePage(-1)" [disabled]="page === 0">Previous</app-button>
+      <app-button variant="secondary" (click)="changePage(1)" [disabled]="page + 1 >= totalPages">Next</app-button>
+    </div>
   </div>
 </section>

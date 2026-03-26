@@ -7,8 +7,9 @@ import { Component, Input } from '@angular/core';
   styleUrl: './app-button.scss',
 })
 export class AppButton {
-  @Input() loading = false;        // pour état chargement
+  @Input() loading = false;
   @Input() type: 'button' | 'submit' | 'reset' = 'button';
   @Input() disabled = false;
-
+  @Input() variant: 'primary' | 'secondary' | 'ghost' | 'danger' = 'primary';
+  @Input() fullWidth = false;
 }

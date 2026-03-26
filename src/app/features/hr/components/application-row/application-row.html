@@ -1,9 +1,12 @@
 <tr>
-  <td>{{ application.candidateName }}</td>
-  <td>{{ application.jobTitle }}</td>
-  <td>{{ application.status }}</td>
-  <td>
-    <app-button [loading]="loadingApprove" (click)="approve()">Approve</app-button>
-    <app-button [loading]="loadingReject" (click)="reject()">Reject</app-button>
+  <td>#{{ application.id }}</td>
+  <td>{{ application.candidateId }}</td>
+  <td>{{ application.jobOfferId }}</td>
+  <td><span class="status-badge" [ngClass]="'status-badge--' + (application.status || 'pending').toLowerCase()">{{ application.status || 'PENDING' }}</span></td>
+  <td>{{ application.appliedDate || '-' }}</td>
+  <td class="row-actions">
+    <app-button variant="secondary" [loading]="loadingApprove" (click)="approve()">Approve</app-button>
+    <app-button variant="danger" [loading]="loadingReject" (click)="reject()">Reject</app-button>
+    <app-button variant="ghost" (click)="schedule.emit(application.id || 0)">Schedule</app-button>
   </td>
 </tr>

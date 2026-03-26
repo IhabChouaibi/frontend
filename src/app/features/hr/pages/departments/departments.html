@@ -1,49 +1,47 @@
-<div class="page">
+<section class="page-shell">
+  <div class="page-hero">
+    <div class="page-hero__content">
+      <span class="eyebrow">Departments</span>
+      <h1 class="page-title">Structurer l organisation avec des departements maintenables.</h1>
+    </div>
 
-  <div class="header">
-    <h2>Departments</h2>
-    <app-button (click)="openCreate()">Add Department</app-button>
+    <div class="hero-actions">
+      <app-button (click)="openCreate()">Add department</app-button>
+    </div>
   </div>
 
   <app-loader *ngIf="loading"></app-loader>
-  <div *ngIf="error" class="error">{{ error }}</div>
+  <div *ngIf="error" class="error-message">{{ error }}</div>
 
-  <app-table *ngIf="!loading"
-             [data]="departments"
-             [columns]="['id', 'name', 'code']">
+  <article class="surface-card">
+    <app-table [data]="departments" [columns]="['ID', 'Name', 'Code', 'Actions']">
+      <ng-template let-item>
+        <td>#{{ item.id }}</td>
+        <td>{{ item.name }}</td>
+        <td>{{ item.code }}</td>
+        <td class="row-actions">
+          <app-button variant="secondary" (click)="openEdit(item)">Edit</app-button>
+          <app-button variant="danger" (click)="delete(item)">Delete</app-button>
+        </td>
+      </ng-template>
+    </app-table>
+  </article>
 
-    <ng-template let-item>
-      <td>{{ item.id }}</td>
-      <td>{{ item.name }}</td>
-      <td>{{ item.code }}</td>
-      <td>
-        <app-button (click)="openEdit(item)">Edit</app-button>
-        <app-button (click)="delete(item.id)">Delete</app-button>
-      </td>
-    </ng-template>
-
-  </app-table>
-
-  <!-- Pagination -->
-  <div class="pagination">
-    <button *ngFor="let p of [].constructor(totalPages); let i = index"
-            (click)="changePage(i)">
-      {{ i + 1 }}
-    </button>
+  <div class="table-footer" *ngIf="totalPages > 0">
+    <span>Page {{ page + 1 }} / {{ totalPages }}</span>
+    <div class="pagination-controls">
+      <app-button variant="ghost" (click)="changePage(-1)" [disabled]="page === 0">Previous</app-button>
+      <app-button variant="secondary" (click)="changePage(1)" [disabled]="page + 1 >= totalPages">Next</app-button>
+    </div>
   </div>
 
-</div>
-
-<!-- MODAL -->
-<app-modal *ngIf="showModal" (close)="showModal = false">
-
-  <form [formGroup]="form" (ngSubmit)="submit()">
-
-    <form-input label="Name" formControlName="name"></form-input>
-    <form-input label="Code" formControlName="code"></form-input>
-
-    <app-button type="submit">Save</app-button>
-
-  </form>
-
-</app-modal>
+  <app-modal [visible]="showModal" [title]="selectedId ? 'Edit department' : 'Create department'" (close)="showModal = false">
+    <form [formGroup]="form" (ngSubmit)="submit()" class="department-form">
+      <div class="field-grid">
+        <app-form-input label="Name" formControlName="name"></app-form-input>
+        <app-form-input label="Code" formControlName="code"></app-form-input>
+      </div>
+      <app-button type="submit">Save department</app-button>
+    </form>
+  </app-modal>
+</section>

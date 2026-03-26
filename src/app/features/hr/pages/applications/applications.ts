@@ -1,5 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
+
 import { ApplicationService } from '../../../../core/services/recruitment/application';
+import { Application } from '../../../../models/recruitment/application';
 
 @Component({
   selector: 'app-applications',
@@ -7,20 +9,23 @@ import { ApplicationService } from '../../../../core/services/recruitment/applic
   templateUrl: './applications.html',
   styleUrl: './applications.scss',
 })
-export class Applications implements OnInit  {
+export class Applications {
+  applications: Application[] = [];
+  showInterviewModal = false;
+  selectedApplicationId = 0;
 
-
-  applications: any[] = [];
-
-  constructor(private appService: ApplicationService) {}
+  constructor(private readonly appService: ApplicationService) {}
 
   ngOnInit(): void {
     this.loadApplications();
   }
 
-  loadApplications() {
-    this.appService.getAllPaged().subscribe(res => {
-      this.applications = res.content;
-    });
+  schedule(applicationId: number): void {
+    this.selectedApplicationId = applicationId;
+    this.showInterviewModal = true;
+  }
+
+  loadApplications(): void {
+    this.appService.getAllPaged().subscribe((res) => this.applications = res.content);
   }
 }

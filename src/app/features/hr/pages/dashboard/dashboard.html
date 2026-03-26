@@ -1,11 +1,43 @@
-<div class="grid">
-  <div class="card">
-    <h3>Job Offers</h3>
-    <p>{{ stats.jobs }}</p>
+<section class="page-shell">
+  <div class="page-hero">
+    <div class="page-hero__content">
+      <span class="eyebrow">HR dashboard</span>
+      <h1 class="page-title">Piloter employees, validations et recrutement depuis une seule vue.</h1>
+      <p class="page-copy">
+        Cette vue consolide les volumes utiles au quotidien RH avec une presentation plus
+        claire, premium et facile a scanner.
+      </p>
+    </div>
   </div>
 
-  <div class="card">
-    <h3>Candidates</h3>
-    <p>{{ stats.candidates }}</p>
+  <app-loader *ngIf="loading"></app-loader>
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+
+  <div class="stats-grid">
+    <article class="metric-card">
+      <h3>Employees</h3>
+      <span class="metric-card__value">{{ stats.employees }}</span>
+      <p class="metric-card__meta">Employes disponibles dans le referentiel.</p>
+    </article>
+    <article class="metric-card">
+      <h3>Pending leaves</h3>
+      <span class="metric-card__value">{{ stats.pendingLeaves }}</span>
+      <p class="metric-card__meta">Demandes de conge en attente de validation.</p>
+    </article>
+    <article class="metric-card">
+      <h3>Pending presence</h3>
+      <span class="metric-card__value">{{ stats.pendingPresence }}</span>
+      <p class="metric-card__meta">Pointages non encore valides.</p>
+    </article>
+    <article class="metric-card">
+      <h3>Job offers</h3>
+      <span class="metric-card__value">{{ stats.jobOffers }}</span>
+      <p class="metric-card__meta">Offres actuellement publiees.</p>
+    </article>
+    <article class="metric-card">
+      <h3>Candidates</h3>
+      <span class="metric-card__value">{{ stats.candidates }}</span>
+      <p class="metric-card__meta">Profils recus par le module recrutement.</p>
+    </article>
   </div>
-</div>
+</section>

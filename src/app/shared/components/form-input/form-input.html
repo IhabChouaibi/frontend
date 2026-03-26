@@ -1,3 +1,13 @@
 <div class="form-group">
-  <input [type]="type" [placeholder]="placeholder" class="form-control" [formControlName]="name">
+  <label *ngIf="label" class="form-label">{{ label }}</label>
+  <input
+    [attr.name]="name || null"
+    [type]="type"
+    [placeholder]="placeholder"
+    class="form-control"
+    [value]="value"
+    [disabled]="disabled"
+    (input)="onInput($event)"
+    (blur)="onBlur()"
+  >
 </div>

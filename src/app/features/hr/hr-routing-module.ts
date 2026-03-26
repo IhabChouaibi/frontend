@@ -11,6 +11,7 @@ import {JobOffers} from './pages/job-offers/job-offers';
 import { Employees } from './pages/employees/employees';
 import { LeaveValidation } from './pages/leave-validation/leave-validation';
 import { PresenceList } from './pages/presence-list/presence-list';
+import { LeaveTypes } from './pages/leave-types/leave-types';
 
 const routes: Routes = [
   {
@@ -20,6 +21,7 @@ const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: Dashboard },
       { path: 'employees', component: Employees },
+      { path: 'leave-types', component: LeaveTypes },
       { path: 'leaves', component: LeaveValidation },
       { path: 'presence', component: PresenceList },
       { path: 'candidates', component: Candidates },

@@ -1,21 +1,10 @@
-.page {
-  padding: 20px;
-}
-
-.header {
+.row-actions {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
-.error {
-  color: red;
-}
-
-.pagination {
-  margin-top: 15px;
-
-  button {
-    margin-right: 5px;
-  }
+.department-form {
+  display: grid;
+  gap: 1rem;
 }

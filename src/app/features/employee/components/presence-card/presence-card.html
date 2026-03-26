@@ -1,0 +1,11 @@
+<article class="presence-card">
+  <div>
+    <strong>{{ presence?.date || 'No date' }}</strong>
+    <p>{{ presence?.checkIn || '--' }} - {{ presence?.checkOut || '--' }}</p>
+  </div>
+
+  <div class="presence-card__meta">
+    <app-status-badge [status]="presence?.status || 'PENDING'"></app-status-badge>
+    <span>{{ presence?.workedMinutes || 0 }} min</span>
+  </div>
+</article>
