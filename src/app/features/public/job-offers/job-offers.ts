@@ -11,29 +11,35 @@ import { JobOffer } from '../../../models/recruitment/job-offer';
   styleUrl: './job-offers.scss',
 })
 export class JobOffers {
-  readonly expertiseAreas = [
-    'e-Government',
-    'Digitalisation des procedures',
-    'Workflow platforms',
-    'Archivage electronique / GED',
-    'Plateformes d echange de donnees',
-    'e-Finance',
-    'Marche financier et bourse',
-    'Banques et societes de gestion',
-    'ERP metiers',
-    'Consulting et ingenierie des solutions'
-  ];
-
-  readonly keyValues = [
-    'Processus d amelioration continue',
-    'Ethique des affaires appliquee au quotidien',
-    'Expertise technique et fonctionnelle',
-    'Pilotage PMI et execution Agile'
+  readonly fallbackOffers: JobOffer[] = [
+    {
+      id: 1,
+      title: 'Angular Frontend Engineer',
+      description: 'Concevoir des interfaces premium et modulaires pour des plateformes RH et digitales.',
+      location: 'Tunis / Hybrid',
+      employmentType: 'Full time',
+      experienceLevel: 'Mid-Senior'
+    },
+    {
+      id: 2,
+      title: 'Spring Boot Backend Engineer',
+      description: 'Construire des microservices robustes pour des projets e-Government et e-Finance.',
+      location: 'Tunis / On-site',
+      employmentType: 'Full time',
+      experienceLevel: 'Senior'
+    },
+    {
+      id: 3,
+      title: 'Business Consultant',
+      description: 'Accompagner la reingenierie, la digitalisation et la transformation des processus metier.',
+      location: 'Tunisia',
+      employmentType: 'Consulting',
+      experienceLevel: 'Experienced'
+    }
   ];
 
   jobOffers: JobOffer[] = [];
   loading = true;
-  totalPages = 0;
 
   constructor(
     private readonly jobService: JobOfferService,
@@ -41,14 +47,13 @@ export class JobOffers {
   ) {}
 
   ngOnInit(): void {
-    this.jobService.getAllPaged(0, 6).subscribe({
+    this.jobService.getAllPaged(0, 12).subscribe({
       next: (page) => {
-        this.jobOffers = page.content;
-        this.totalPages = page.totalPages;
+        this.jobOffers = page.content.length ? page.content : this.fallbackOffers;
         this.loading = false;
       },
       error: () => {
-        this.jobOffers = [];
+        this.jobOffers = this.fallbackOffers;
         this.loading = false;
       }
     });

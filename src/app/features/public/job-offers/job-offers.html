@@ -1,153 +1,35 @@
-<section class="landing-hero">
-  <div class="landing-hero__content">
-    <span class="eyebrow">ISAM engineering</span>
-    <h1>La digitalisation des organisations publiques et privees, concue avec exigence.</h1>
-    <p>
-      Depuis 2010, ISAM engineering accompagne l administration, les grands comptes et les
-      entreprises dans la conception, la realisation et la maintenance de systemes
-      d information a forte valeur ajoutee.
-    </p>
-
-    <div class="hero-actions">
-      <a class="button-link button-link--primary" routerLink="/login">Acceder au HRMS</a>
-      <a class="button-link button-link--secondary" routerLink="/" fragment="job-offers">Voir les opportunites</a>
-    </div>
-  </div>
-
-  <div class="landing-hero__panel">
-    <div class="hero-kicker">Expertise premium</div>
-    <div class="hero-metrics">
-      <article>
-        <strong>2010</strong>
-        <span>Fondation orientee digital</span>
-      </article>
-      <article>
-        <strong>PMI + Agile</strong>
-        <span>Cadres de pilotage et de livraison</span>
-      </article>
-      <article>
-        <strong>National & international</strong>
-        <span>Expertise reconnue sur plusieurs marches</span>
-      </article>
-    </div>
-  </div>
-</section>
-
-<section class="landing-section" id="about">
-  <div class="section-heading">
-    <span class="eyebrow">Qui sommes-nous</span>
-    <h2>Une SSII hors normes, orientee usage, transformation et performance.</h2>
-  </div>
-
-  <div class="landing-story">
-    <article class="story-block">
-      <p>
-        Specialisee dans le developpement de nouveaux usages, la digitalisation, les domaines
-        e-Finance et e-Government, ISAM engineering construit des solutions qui relient vision
-        metier, excellence technique et execution durable.
-      </p>
-    </article>
-    <article class="story-block">
-      <p>
-        Notre evolution nous permet aujourd hui d intervenir sur une offre large : conseil,
-        conception, realisation, maintenance, ingenierie des solutions et accompagnement du
-        changement pour des systemes d information critiques.
-      </p>
-    </article>
-  </div>
-</section>
-
-<section class="landing-section">
-  <div class="section-heading">
-    <span class="eyebrow">Domaines couverts</span>
-    <h2>Des plateformes pensees pour l administration, la finance et l entreprise digitale.</h2>
-  </div>
-
-  <div class="areas-grid">
-    <article class="area-tile" *ngFor="let area of expertiseAreas">{{ area }}</article>
-  </div>
-</section>
-
-<section class="landing-section landing-section--contrast">
-  <div class="section-heading">
-    <span class="eyebrow">Expertise</span>
-    <h2>Des experts de haut niveau, une execution maitrisee et une forte culture du resultat.</h2>
-  </div>
-
-  <div class="capability-grid">
-    <article class="capability-card">
-      <h3>Equipe multidisciplinaire</h3>
-      <p>
-        Systemes d information, digitalisation, ingenierie de developpement, finance et consulting
-        sont combines pour concevoir des solutions adaptees au besoin reel.
-      </p>
-    </article>
-    <article class="capability-card">
-      <h3>Methodes robustes</h3>
-      <p>
-        L equipe s appuie sur un referentiel PMI pour le cadrage des projets et sur des approches
-        Agile pour accelerer l execution et la collaboration.
-      </p>
-    </article>
-    <article class="capability-card">
-      <h3>Valeur durable</h3>
-      <p>
-        ISAM engineering accorde une importance forte a la maitrise des processus metier,
-        a la reingenierie et au developpement de connaissances specialisees.
-      </p>
-    </article>
-  </div>
-
-  <div class="values-strip">
-    <span *ngFor="let value of keyValues">{{ value }}</span>
-  </div>
-</section>
-
-<section class="landing-section" id="job-offers">
-  <div class="section-heading section-heading--row">
-    <div>
+<section class="jobs-page">
+  <div class="jobs-hero">
+    <div class="jobs-hero__content">
       <span class="eyebrow">Job offers</span>
-      <h2>Rejoindre une equipe qui construit des solutions a impact.</h2>
+      <h1>Rejoignez une equipe qui construit des solutions digitales a forte valeur ajoutee.</h1>
+      <p>
+        Consultez les opportunites ouvertes chez ISAM engineering. La page est prete a etre
+        connectee a vos services Angular de recrutement et affiche deja des cartes premium.
+      </p>
     </div>
-    <p>Les opportunites les plus recentes sont affichees directement depuis le service recrutement.</p>
   </div>
 
-  <div *ngIf="loading" class="empty-state">Chargement des offres en cours...</div>
+  <div *ngIf="loading" class="empty-state">Chargement des offres...</div>
 
-  <div class="jobs-grid" *ngIf="!loading && jobOffers.length > 0">
+  <div class="jobs-grid" *ngIf="!loading">
     <article class="job-card" *ngFor="let offer of jobOffers">
-      <div class="job-card__top">
+      <div class="job-card__header">
         <span class="status-badge status-badge--active">{{ offer.employmentType || 'Open role' }}</span>
-        <h3>{{ offer.title }}</h3>
+        <h2>{{ offer.title }}</h2>
       </div>
-      <p>{{ offer.description | truncate: 140 }}</p>
-      <div class="job-meta">
-        <span>{{ offer.location || 'Tunisia / Hybrid' }}</span>
+
+      <p>{{ offer.description }}</p>
+
+      <div class="job-card__meta">
+        <span>{{ offer.location || 'Tunisia' }}</span>
         <span>{{ offer.experienceLevel || 'Experienced' }}</span>
       </div>
-      <app-button (click)="apply(offer.id)">Postuler</app-button>
+
+      <div class="job-card__actions">
+        <app-button (click)="apply(offer.id)">Apply</app-button>
+        <app-button variant="secondary" (click)="apply(offer.id)">Voir details</app-button>
+      </div>
     </article>
-  </div>
-
-  <div *ngIf="!loading && jobOffers.length === 0" class="empty-state">
-    Aucune offre n est disponible pour le moment.
-  </div>
-</section>
-
-<section class="landing-section landing-section--cta" id="contact">
-  <div class="cta-panel">
-    <div>
-      <span class="eyebrow">Contact</span>
-      <h2>Construisons des relations durables avec exigence, confiance et innovation.</h2>
-      <p>
-        L ethique des affaires, la qualite de service et la performance des solutions livrees
-        restent au coeur de chaque projet mene avec nos clients et partenaires.
-      </p>
-    </div>
-
-    <div class="cta-actions">
-      <a class="button-link button-link--primary" routerLink="/login">Se connecter</a>
-      <a class="button-link button-link--ghost" routerLink="/" fragment="about">Decouvrir la societe</a>
-    </div>
   </div>
 </section>

@@ -1,0 +1,101 @@
+<section class="about-hero">
+  <div class="about-hero__content">
+    <span class="eyebrow">A propos de societe ISAM</span>
+    <h1>ISAM engineering, SSII orientee digitalisation, performance et transformation durable.</h1>
+    <p>
+      Fondee depuis 2010 dans une orientation de developpement du digital, ISAM engineering
+      est une Societe de Service et d Ingenierie Informatique qui accompagne principalement
+      l administration et les grands comptes.
+    </p>
+  </div>
+
+  <div class="about-hero__panel">
+    <strong>Depuis 2010</strong>
+    <p>Une evolution continue au service de l entreprise digitale, de l e-Government et de l e-Finance.</p>
+  </div>
+</section>
+
+<section class="about-section">
+  <div class="section-heading">
+    <span class="eyebrow">Qui sommes-nous</span>
+    <h2>Une SSII hors normes, construite autour du besoin metier et de l excellence d execution.</h2>
+  </div>
+
+  <div class="about-grid">
+    <article class="about-card">
+      <p>
+        Des la fondation de notre structure, nous avons fait en sorte que ISAM engineering
+        soit une SSII hors normes, capable de combiner savoir-faire technique et expertise
+        fonctionnelle sur des systemes d information critiques.
+      </p>
+    </article>
+    <article class="about-card">
+      <p>
+        Specialisee dans le developpement de nouveaux usages, la digitalisation, les domaines
+        e-Finance et e-Government ainsi que le developpement de l entreprise digitale,
+        ISAM engineering couvre le conseil, la conception, la realisation et la maintenance.
+      </p>
+    </article>
+  </div>
+</section>
+
+<section class="about-section">
+  <div class="section-heading">
+    <span class="eyebrow">Domaines d expertise</span>
+    <h2>Une offre complete, adressee a des secteurs a forte exigence fonctionnelle et technique.</h2>
+  </div>
+
+  <div class="domains-grid">
+    <article class="domain-pill" *ngFor="let domain of domains">{{ domain }}</article>
+  </div>
+</section>
+
+<section class="about-section about-section--contrast">
+  <div class="section-heading">
+    <span class="eyebrow">Valeurs et engagement</span>
+    <h2>Confiance, qualite, innovation et ethique des affaires au coeur de chaque projet.</h2>
+  </div>
+
+  <div class="values-grid">
+    <article class="value-card" *ngFor="let value of values">{{ value }}</article>
+  </div>
+
+  <p class="about-note">
+    Depuis ses debuts, ISAM engineering a su construire une relation durable avec ses clients
+    et partenaires strategiques en assurant des prestations innovantes, de qualite et a forte valeur ajoutee.
+  </p>
+</section>
+
+<section class="about-section">
+  <div class="section-heading">
+    <span class="eyebrow">Expertise et methodologie</span>
+    <h2>Des experts de haut niveau, des methodes robustes et une forte culture du resultat.</h2>
+  </div>
+
+  <div class="about-grid">
+    <article class="about-card">
+      <p>
+        Une equipe experimentee en systeme d informations, digitalisation, ingenierie de developpement,
+        finance et consulting met ses competences a disposition pour creer la solution la plus adaptee.
+      </p>
+    </article>
+    <article class="about-card">
+      <ul class="expertise-list">
+        <li *ngFor="let item of expertiseHighlights">{{ item }}</li>
+      </ul>
+    </article>
+  </div>
+</section>
+
+<section class="about-cta">
+  <div>
+    <span class="eyebrow">Call to action</span>
+    <h2>Decouvrir nos opportunites, nous contacter ou acceder directement au HRMS.</h2>
+  </div>
+
+  <div class="about-cta__actions">
+    <a class="button-link button-link--primary" routerLink="/job-offers">Job Offers</a>
+    <a class="button-link button-link--secondary" routerLink="/contact">Contact</a>
+    <a class="button-link button-link--ghost" routerLink="/login">Login</a>
+  </div>
+</section>

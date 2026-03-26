@@ -8,16 +8,15 @@ import { AuthGuard } from './core/guards/auth-guard-guard';
 import { EmployeeLayout } from './layouts/employee-layout/employee-layout';
 
 const routes: Routes = [
-   {
-    path: 'login',
-    component: Login
-  },
-
   // ================= PUBLIC =================
   {
     path: '',
     component: PublicLayout,
     children: [
+      {
+        path: 'login',
+        component: Login
+      },
       {
         path: '',
         loadChildren: () =>
@@ -57,7 +56,7 @@ const routes: Routes = [
   },
 
   // fallback
-  { path: '**', redirectTo: 'login' }
+  { path: '**', redirectTo: '' }
 
 
 

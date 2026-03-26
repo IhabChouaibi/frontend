@@ -1,0 +1,47 @@
+<section class="contact-page">
+  <div class="contact-hero">
+    <div class="contact-hero__content">
+      <span class="eyebrow">Contact</span>
+      <h1>Parlons de vos projets, de vos besoins metier et de vos enjeux de transformation.</h1>
+      <p>
+        Une equipe experimentee en systemes d information, digitalisation, finance et consulting
+        peut vous orienter vers la solution la plus adaptee.
+      </p>
+    </div>
+  </div>
+
+  <div class="contact-grid">
+    <article class="contact-card">
+      <h2>Nous ecrire</h2>
+      <p>Le formulaire est pret a etre branche sur un service Angular ou une API REST.</p>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="contact-form">
+        <div class="field-grid">
+          <app-form-input label="Nom" formControlName="name" placeholder="Votre nom"></app-form-input>
+          <app-form-input label="Email" formControlName="email" placeholder="Votre email"></app-form-input>
+        </div>
+
+        <app-form-input label="Sujet" formControlName="subject" placeholder="Sujet"></app-form-input>
+
+        <div class="field-stack">
+          <label for="message">Message</label>
+          <textarea id="message" formControlName="message" placeholder="Votre message"></textarea>
+        </div>
+
+        <app-button type="submit">Envoyer</app-button>
+      </form>
+
+      <div *ngIf="successMessage" class="success-message">{{ successMessage }}</div>
+    </article>
+
+    <article class="contact-card contact-card--dark">
+      <h2>Informations de contact</h2>
+      <div class="detail-list">
+        <div class="detail-item"><strong>Societe</strong><span>ISAM engineering</span></div>
+        <div class="detail-item"><strong>Email</strong><span>contact@isam-engineering.tn</span></div>
+        <div class="detail-item"><strong>Specialites</strong><span>e-Government, e-Finance, digitalisation</span></div>
+        <div class="detail-item"><strong>Approches</strong><span>PMI et Agile</span></div>
+      </div>
+    </article>
+  </div>
+</section>

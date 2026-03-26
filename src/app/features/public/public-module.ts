@@ -7,12 +7,16 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { SharedModule } from '../../shared/shared-module';
 import { JobOfferService } from '../../core/services/recruitment/job-offer';
 import { JobOffers } from './job-offers/job-offers';
+import { About } from './about/about';
+import { Contact } from './contact/contact';
 
 
 @NgModule({
   declarations: [
     Apply,
     JobOffers,
+    About,
+    Contact,
   ],
   imports: [
    CommonModule,

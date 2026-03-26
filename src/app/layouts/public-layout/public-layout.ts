@@ -7,5 +7,13 @@ import { Component } from '@angular/core';
   styleUrl: './public-layout.scss',
 })
 export class PublicLayout {
+  menuOpen = false;
 
+  toggleMenu(): void {
+    this.menuOpen = !this.menuOpen;
+  }
+
+  closeMenu(): void {
+    this.menuOpen = false;
+  }
 }

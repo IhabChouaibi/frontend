@@ -1,19 +1,21 @@
 <div class="public-layout">
   <header class="public-header">
     <div class="public-header__inner">
-      <a class="public-brand" routerLink="/">
+      <a class="public-brand" routerLink="/" (click)="closeMenu()">
         <span class="public-brand__mark">IS</span>
         <div>
           <strong>ISAM engineering</strong>
-          <small>Digital transformation since 2010</small>
+          <small>Corporate digital expertise</small>
         </div>
       </a>
 
-      <nav class="public-nav">
-        <a routerLink="/login">Login</a>
-        <a routerLink="/" fragment="job-offers">Job Offers</a>
-        <a routerLink="/" fragment="contact">Contact</a>
-        <a routerLink="/" fragment="about">A propos</a>
+      <button class="menu-toggle" type="button" (click)="toggleMenu()">Menu</button>
+
+      <nav class="public-nav" [class.public-nav--open]="menuOpen">
+        <a routerLink="/about" routerLinkActive="active" (click)="closeMenu()">A propos</a>
+        <a routerLink="/job-offers" routerLinkActive="active" (click)="closeMenu()">Job Offers</a>
+        <a routerLink="/contact" routerLinkActive="active" (click)="closeMenu()">Contact</a>
+        <a routerLink="/login" routerLinkActive="active" (click)="closeMenu()">Login</a>
       </nav>
     </div>
   </header>
@@ -21,4 +23,21 @@
   <main class="public-main">
     <router-outlet></router-outlet>
   </main>
+
+  <footer class="public-footer">
+    <div class="public-footer__inner">
+      <div>
+        <strong>ISAM engineering</strong>
+        <p>SSII orientee digitalisation, e-Government, e-Finance et entreprise digitale.</p>
+      </div>
+
+      <div class="public-footer__links">
+        <a href="https://facebook.com" target="_blank" rel="noreferrer">Facebook</a>
+        <a href="https://wa.me/21600000000" target="_blank" rel="noreferrer">WhatsApp</a>
+        <a href="mailto:contact@isam-engineering.tn">contact@isam-engineering.tn</a>
+      </div>
+
+      <small>© 2026 ISAM engineering. All rights reserved.</small>
+    </div>
+  </footer>
 </div>
