@@ -48,6 +48,7 @@ export class Departments {
 
   submit(): void {
     if (this.form.invalid) {
+      this.form.markAllAsTouched();
       return;
     }
 

@@ -26,9 +26,12 @@
         <div class="field-stack">
           <label for="message">Message</label>
           <textarea id="message" formControlName="message" placeholder="Votre message"></textarea>
+          <small *ngIf="getError('message', 'Message')" class="error-message">
+            {{ getError('message', 'Message') }}
+          </small>
         </div>
 
-        <app-button type="submit">Envoyer</app-button>
+        <app-button type="submit" [disabled]="form.invalid">Envoyer</app-button>
       </form>
 
       <div *ngIf="successMessage" class="success-message">{{ successMessage }}</div>

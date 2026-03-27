@@ -5,6 +5,7 @@ import { AuthService } from '../../../../core/services/auth-service';
 import { LeaveRequestService } from '../../../../core/services/leave-service/leave-request-service';
 import { LeaveTypeService } from '../../../../core/services/leave-service/leave-type-service';
 import { LeaveType } from '../../../../models/leave-service/leave-type';
+import { dateRangeValidator } from '../../../../shared/utils/form-validators';
 
 @Component({
   selector: 'app-leave-request',
@@ -19,7 +20,9 @@ export class LeaveRequest {
     startDate: ['', Validators.required],
     endDate: ['', Validators.required],
     leaveTypeId: ['', Validators.required],
-    reason: ['', Validators.required]
+    reason: ['', [Validators.required, Validators.minLength(5)]]
+  }, {
+    validators: dateRangeValidator('startDate', 'endDate')
   });
 
   leaveTypes: LeaveType[] = [];
@@ -35,15 +38,25 @@ export class LeaveRequest {
 
   ngOnInit(): void {
     this.leaveTypeService.findByPage(0, 50).subscribe({
-      next: (res) => this.leaveTypes = res.content,
-      error: () => this.leaveTypes = []
+      next: (res) => {
+        this.leaveTypes = res.content;
+      },
+      error: (error: Error) => {
+        this.error = error.message;
+        this.leaveTypes = [];
+      }
     });
   }
 
   submit(): void {
     const employeeId = this.authService.getCurrentUserId();
 
-    if (this.form.invalid || !employeeId) {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    if (!employeeId) {
       this.error = 'Unable to submit leave request. Employee id is missing.';
       return;
     }
@@ -54,9 +67,9 @@ export class LeaveRequest {
 
     this.leaveService.submitLeaveRequest({
       employeeId,
-      startDate: this.form.getRawValue().startDate || '',
-      endDate: this.form.getRawValue().endDate || '',
-      reason: this.form.getRawValue().reason || '',
+      startDate: this.form.getRawValue().startDate ?? '',
+      endDate: this.form.getRawValue().endDate ?? '',
+      reason: this.form.getRawValue().reason ?? '',
       leaveTypeId: Number(this.form.getRawValue().leaveTypeId)
     }).subscribe({
       next: () => {

@@ -1,5 +1,4 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
 import { EmployeeRoutingModule } from './employee-routing-module';
 import { Profile } from './pages/profile/profile';
@@ -9,7 +8,6 @@ import { ProfileCard } from './components/profile-card/profile-card';
 import { LeaveForm } from './components/leave-form/leave-form';
 import { HistoryTable } from './components/history-table/history-table';
 import { SharedModule } from '../../shared/shared-module';
-import {FormsModule} from '@angular/forms';
 import { PresenceComponent} from './pages/presence/presence';
 import { StatusBadgeComponent } from './components/status-badge/status-badge';
 import { PresenceCardComponent } from './components/presence-card/presence-card';
@@ -31,10 +29,7 @@ import { OrganizationInfoComponent } from './pages/organization-info/organizatio
   ],
   imports: [
     SharedModule,
-    CommonModule,
     EmployeeRoutingModule,
-    SharedModule,
-    FormsModule,
   ]
 })
 export class EmployeeModule { }

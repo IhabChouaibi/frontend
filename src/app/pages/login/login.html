@@ -2,22 +2,28 @@
   <div class="login-card">
     <h2 class="login-title">HRMS Login</h2>
 
-   <form [formGroup]="loginForm" (ngSubmit)="submit()">
+    <form [formGroup]="loginForm" (ngSubmit)="submit()">
+      <app-form-input
+        formControlName="username"
+        name="username"
+        label="Username"
+        placeholder="Username"
+      ></app-form-input>
 
-  <app-form-input formControlName="username" name="username" placeholder="Username"></app-form-input>
+      <app-form-input
+        formControlName="password"
+        name="password"
+        type="password"
+        placeholder="Password"
+        label="Mot de passe"
+      ></app-form-input>
 
-<app-form-input
-  formControlName="password"
-  name="password" 
-  type="password"
-  placeholder="password"
-  label="Mot de passe"
-></app-form-input>
-  <app-button type="submit" [loading]="loading">
-    Login
-  </app-button>
+      <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
 
-</form>
+      <app-button type="submit" [loading]="loading" [disabled]="loginForm.invalid">
+        Login
+      </app-button>
+    </form>
 
     <div class="login-footer">
       <small>Forgot password? <a routerLink="/reset-password">Reset</a></small>

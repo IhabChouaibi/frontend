@@ -22,14 +22,14 @@ export class Employees implements OnDestroy {
 
   readonly searchControl = new FormControl('', { nonNullable: true });
   readonly form = this.fb.group({
-    firstName: ['', Validators.required],
-    lastName: ['', Validators.required],
+    firstName: ['', [Validators.required, Validators.minLength(2)]],
+    lastName: ['', [Validators.required, Validators.minLength(2)]],
     email: ['', [Validators.required, Validators.email]],
-    phone: [''],
-    hireDate: [''],
-    status: ['ACTIVE'],
-    departmentId: [''],
-    jobId: ['']
+    phone: ['', Validators.pattern(/^[0-9+\s()-]{8,20}$/)],
+    hireDate: ['', Validators.required],
+    status: ['ACTIVE', Validators.required],
+    departmentId: ['', Validators.required],
+    jobId: ['', Validators.required]
   });
 
   employees: EmployeeListItem[] = [];
@@ -67,6 +67,9 @@ export class Employees implements OnDestroy {
       next: ({ departments, jobs }) => {
         this.departments = departments.content;
         this.jobs = jobs.content;
+      },
+      error: (error: Error) => {
+        this.error = error.message;
       }
     });
 
@@ -98,22 +101,28 @@ export class Employees implements OnDestroy {
           jobId: employee.jobId ? String(employee.jobId) : ''
         });
         this.showModal = true;
+      },
+      error: (error: Error) => {
+        this.error = error.message;
       }
     });
   }
 
   submit(): void {
     if (this.form.invalid) {
+      this.form.markAllAsTouched();
       return;
     }
 
+    const rawValue = this.form.getRawValue();
     const payload: Employee = {
-      ...this.form.getRawValue(),
-      departmentId: this.form.getRawValue().departmentId ? Number(this.form.getRawValue().departmentId) : undefined,
-      jobId: this.form.getRawValue().jobId ? Number(this.form.getRawValue().jobId) : undefined
+      ...rawValue,
+      departmentId: rawValue.departmentId ? Number(rawValue.departmentId) : undefined,
+      jobId: rawValue.jobId ? Number(rawValue.jobId) : undefined
     } as Employee;
 
     this.saving = true;
+    this.error = '';
 
     const request$ = this.selectedId
       ? this.employeeService.update(this.selectedId, payload)
@@ -139,7 +148,9 @@ export class Employees implements OnDestroy {
 
     this.employeeService.delete(item.id).subscribe({
       next: () => this.loadEmployees(),
-      error: (error: Error) => this.error = error.message
+      error: (error: Error) => {
+        this.error = error.message;
+      }
     });
   }
 

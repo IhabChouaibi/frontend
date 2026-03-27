@@ -1,21 +1,17 @@
-import { Component, forwardRef, Input } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Component, Input, Optional, Self } from '@angular/core';
+import { AbstractControl, ControlValueAccessor, NgControl } from '@angular/forms';
+
+import { getControlErrorMessage } from '../../utils/form-error.utils';
 
 @Component({
   selector: 'app-form-input',
   standalone: false,
   templateUrl: './form-input.html',
-  styleUrl: './form-input.scss',
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => FormInput),
-      multi: true
-    }
-  ]
+  styleUrl: './form-input.scss'
 })
 export class FormInput implements ControlValueAccessor {
   @Input() name = '';
+  @Input() id = '';
   @Input() placeholder = '';
   @Input() type = 'text';
   @Input() label = '';
@@ -25,6 +21,12 @@ export class FormInput implements ControlValueAccessor {
 
   private onChange: (value: string) => void = () => {};
   private onTouched: () => void = () => {};
+
+  constructor(@Optional() @Self() private readonly ngControl: NgControl | null) {
+    if (this.ngControl) {
+      this.ngControl.valueAccessor = this;
+    }
+  }
 
   writeValue(value: string | null): void {
     this.value = value ?? '';
@@ -50,5 +52,17 @@ export class FormInput implements ControlValueAccessor {
 
   onBlur(): void {
     this.onTouched();
+  }
+
+  get control(): AbstractControl | null {
+    return this.ngControl?.control ?? null;
+  }
+
+  get inputId(): string {
+    return this.id || this.name || this.label.toLowerCase().replace(/\s+/g, '-');
+  }
+
+  get errorMessage(): string {
+    return getControlErrorMessage(this.control, this.label || this.placeholder || this.name || 'Field');
   }
 }

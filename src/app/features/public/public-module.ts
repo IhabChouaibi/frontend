@@ -1,11 +1,8 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
 import { PublicRoutingModule } from './public-routing-module';
 import { Apply } from './apply/apply';
-import { ReactiveFormsModule } from '@angular/forms';
 import { SharedModule } from '../../shared/shared-module';
-import { JobOfferService } from '../../core/services/recruitment/job-offer';
 import { JobOffers } from './job-offers/job-offers';
 import { About } from './about/about';
 import { Contact } from './contact/contact';
@@ -19,9 +16,7 @@ import { Contact } from './contact/contact';
     Contact,
   ],
   imports: [
-   CommonModule,
     SharedModule,
-    ReactiveFormsModule,
     PublicRoutingModule
   ]
 })

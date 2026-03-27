@@ -30,6 +30,6 @@
   </article>
 
   <app-modal [visible]="showModal" [title]="selectedId ? 'Edit leave type' : 'Create leave type'" (close)="showModal = false">
-    <app-leave-type-form [form]="form" (submitted)="submit()"></app-leave-type-form>
+    <app-leave-type-form [form]="form" [loading]="saving" (submitted)="submit()"></app-leave-type-form>
   </app-modal>
 </section>

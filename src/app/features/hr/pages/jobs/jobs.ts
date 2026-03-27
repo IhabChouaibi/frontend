@@ -44,6 +44,7 @@ export class Jobs {
 
   submit(): void {
     if (this.form.invalid) {
+      this.form.markAllAsTouched();
       return;
     }
 

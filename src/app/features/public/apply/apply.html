@@ -11,7 +11,8 @@
 
     <form [formGroup]="form" (ngSubmit)="submit()" class="apply-form">
       <div class="field-grid">
-        <app-form-input formControlName="name" label="Nom complet" placeholder="Nom complet"></app-form-input>
+        <app-form-input formControlName="firstName" label="Prenom" placeholder="Prenom"></app-form-input>
+        <app-form-input formControlName="lastName" label="Nom" placeholder="Nom"></app-form-input>
         <app-form-input formControlName="email" label="Email" placeholder="Email"></app-form-input>
         <app-form-input formControlName="phone" label="Telephone" placeholder="Telephone"></app-form-input>
       </div>
@@ -19,12 +20,17 @@
       <div class="field-stack">
         <label for="cv">CV</label>
         <input id="cv" type="file" (change)="onFileChange($event)" />
-        <small *ngIf="form.get('cv')?.invalid && form.get('cv')?.touched" class="error-message">
-          Le CV est obligatoire.
+        <small *ngIf="getError('cv', 'CV')" class="error-message">
+          {{ getError('cv', 'CV') }}
         </small>
       </div>
 
-      <app-button [loading]="loading" type="submit">Submit Application</app-button>
+      <div *ngIf="successMessage" class="success-message">{{ successMessage }}</div>
+      <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+      <app-button [loading]="loading" [disabled]="form.invalid" type="submit">
+        Submit Application
+      </app-button>
     </form>
   </div>
 </section>

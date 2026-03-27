@@ -30,5 +30,5 @@
     </div>
   </div>
 
-  <app-button type="submit" [loading]="loading">Save leave type</app-button>
+  <app-button type="submit" [loading]="loading" [disabled]="form.invalid">Save leave type</app-button>
 </form>

@@ -3,6 +3,7 @@ import { FormGroup } from '@angular/forms';
 
 import { Department } from '../../../../models/organisation-service/department';
 import { Job } from '../../../../models/organisation-service/job';
+import { getControlErrorMessage } from '../../../../shared/utils/form-error.utils';
 
 @Component({
   selector: 'app-employee-form',
@@ -16,4 +17,8 @@ export class EmployeeFormComponent {
   @Input() jobs: Job[] = [];
   @Input() loading = false;
   @Output() submitted = new EventEmitter<void>();
+
+  getError(controlName: string, label: string): string {
+    return getControlErrorMessage(this.form.get(controlName), label);
+  }
 }

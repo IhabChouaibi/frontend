@@ -4,15 +4,16 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { environment } from '../../../../enviroment/enviroment';
-import { EmployeeListItem } from '../../../models/employee-service/employee-list-item';
+import { Path } from '../../../enums/path';
 import { Employee } from '../../../models/employee-service/employee';
+import { EmployeeListItem } from '../../../models/employee-service/employee-list-item';
 import { Page } from '../../../models/recruitment/page';
 
 @Injectable({
   providedIn: 'root',
 })
 export class EmployeeService {
-  private readonly baseUrl = `${environment.apiUrl}api/employees`;
+  private readonly baseUrl = `${environment.apiUrl}${Path.employeePath}/api/employees`;
 
   constructor(private readonly http: HttpClient) {}
 
@@ -22,7 +23,7 @@ export class EmployeeService {
 
   getPaginated(page: number, size: number): Observable<Page<EmployeeListItem>> {
     return this.http
-      .get<Page<EmployeeListItem>>(this.baseUrl, {
+      .get<Page<EmployeeListItem>>(`${this.baseUrl}/getall`, {
         params: this.buildPageParams(page, size),
       })
       .pipe(catchError(this.handleError('load employees')));
@@ -30,35 +31,39 @@ export class EmployeeService {
 
   getById(id: number): Observable<Employee> {
     return this.http
-      .get<Employee>(`${this.baseUrl}/${id}`)
+      .get<Employee>(`${this.baseUrl}/get/${id}`)
       .pipe(catchError(this.handleError(`load employee #${id}`)));
   }
 
   create(employee: Employee): Observable<Employee> {
     return this.http
-      .post<Employee>(this.baseUrl, employee)
+      .post<Employee>(`${this.baseUrl}/create`, employee)
       .pipe(catchError(this.handleError('create employee')));
   }
 
   update(id: number, employee: Employee): Observable<Employee> {
     return this.http
-      .put<Employee>(`${this.baseUrl}/${id}`, employee)
+      .put<Employee>(`${this.baseUrl}/update/${id}`, employee)
       .pipe(catchError(this.handleError(`update employee #${id}`)));
   }
 
   delete(id: number): Observable<void> {
     return this.http
-      .delete<void>(`${this.baseUrl}/${id}`)
+      .delete<void>(`${this.baseUrl}/delete/${id}`)
       .pipe(catchError(this.handleError(`delete employee #${id}`)));
   }
 
   search(keyword: string, page = 0, size = 10): Observable<Page<EmployeeListItem>> {
+    const trimmedKeyword = keyword.trim();
     let params = this.buildPageParams(page, size);
-    params = params.set('keyword', keyword.trim());
+
+    if (trimmedKeyword) {
+      params = params.set('keyword', trimmedKeyword);
+    }
 
     return this.http
       .get<Page<EmployeeListItem>>(`${this.baseUrl}/search`, { params })
-      .pipe(catchError(this.handleError(`search employees with "${keyword}"`)));
+      .pipe(catchError(this.handleError(`search employees with "${trimmedKeyword}"`)));
   }
 
   private buildPageParams(page: number, size: number): HttpParams {

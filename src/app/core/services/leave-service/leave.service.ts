@@ -35,23 +35,16 @@ export class LeaveService {
   constructor(private readonly http: HttpClient) {}
 
   getAll(query: LeaveQueryParams = {}): Observable<Page<Leave>> {
-    return this.http
-      .get<Page<LeaveApiModel>>(this.leaveRequestsUrl, {
-        params: this.buildParams(query, {
-          page: 0,
-          size: 10,
-        }),
-      })
-      .pipe(
-        map((page) => this.normalizePage(page, (leave) => this.mapLeave(leave))),
-        catchError(this.handleError('load leave requests'))
-      );
+    if (query.employeeId !== undefined && query.employeeId !== null) {
+      return this.getByEmployee(query.employeeId, query);
+    }
+
+    return this.getPending(query.page ?? 0, query.size ?? 10);
   }
 
   getById(id: number): Observable<Leave> {
-    return this.http.get<LeaveApiModel>(`${this.leaveRequestsUrl}/${id}`).pipe(
-      map((leave) => this.mapLeave(leave)),
-      catchError(this.handleError(`load leave request #${id}`))
+    return throwError(
+      () => new Error(`Leave request lookup by id is not exposed by the current backend for request #${id}.`)
     );
   }
 
@@ -73,8 +66,8 @@ export class LeaveService {
       return this.cancelLeave(id, employeeId);
     }
 
-    return this.http.delete<void>(`${this.leaveRequestsUrl}/${id}`).pipe(
-      catchError(this.handleError(`delete leave request #${id}`))
+    return throwError(
+      () => new Error(`Deleting leave request #${id} is not exposed by the current backend. Use cancel instead.`)
     );
   }
 

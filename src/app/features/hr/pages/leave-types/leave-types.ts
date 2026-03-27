@@ -14,22 +14,21 @@ export class LeaveTypes {
   private readonly fb = inject(FormBuilder);
 
   readonly form = this.fb.group({
-    name: ['', Validators.required],
-    paid: ['YES'],
-    requiresApproval: ['YES'],
-    requiresDocument: ['NO'],
-    maxDaysPerYear: [20]
+    name: ['', [Validators.required, Validators.minLength(2)]],
+    paid: ['YES', Validators.required],
+    requiresApproval: ['YES', Validators.required],
+    requiresDocument: ['NO', Validators.required],
+    maxDaysPerYear: [20, [Validators.required, Validators.min(1)]]
   });
 
   leaveTypes: LeaveType[] = [];
   showModal = false;
   selectedId: number | null = null;
   loading = false;
+  saving = false;
   error = '';
 
-  constructor(
-    private readonly leaveTypeService: LeaveTypeService
-  ) {}
+  constructor(private readonly leaveTypeService: LeaveTypeService) {}
 
   ngOnInit(): void {
     this.load();
@@ -54,8 +53,12 @@ export class LeaveTypes {
 
   submit(): void {
     if (this.form.invalid) {
+      this.form.markAllAsTouched();
       return;
     }
+
+    this.saving = true;
+    this.error = '';
 
     const payload = this.form.getRawValue() as LeaveType;
     const request$ = this.selectedId
@@ -64,10 +67,14 @@ export class LeaveTypes {
 
     request$.subscribe({
       next: () => {
+        this.saving = false;
         this.showModal = false;
         this.load();
       },
-      error: (error: Error) => this.error = error.message
+      error: (error: Error) => {
+        this.error = error.message;
+        this.saving = false;
+      }
     });
   }
 
@@ -78,12 +85,15 @@ export class LeaveTypes {
 
     this.leaveTypeService.deleteById(item.id).subscribe({
       next: () => this.load(),
-      error: (error: Error) => this.error = error.message
+      error: (error: Error) => {
+        this.error = error.message;
+      }
     });
   }
 
   private load(): void {
     this.loading = true;
+    this.error = '';
 
     this.leaveTypeService.findByPage(0, 50).subscribe({
       next: (res) => {

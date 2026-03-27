@@ -9,7 +9,14 @@
   <div class="field-stack">
     <label for="description">Description</label>
     <textarea id="description" formControlName="description" placeholder="Role description"></textarea>
+    <small *ngIf="getError('description', 'Description')" class="error-message">
+      {{ getError('description', 'Description') }}
+    </small>
   </div>
 
-  <app-button type="submit" [loading]="loading">{{ job ? 'Update offer' : 'Create offer' }}</app-button>
+  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+  <app-button type="submit" [loading]="loading" [disabled]="form.invalid">
+    {{ job ? 'Update offer' : 'Create offer' }}
+  </app-button>
 </form>

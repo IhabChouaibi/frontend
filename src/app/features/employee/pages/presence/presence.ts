@@ -93,16 +93,21 @@ export class PresenceComponent {
 
     if (!employeeId) {
       this.error = 'Employee id is missing.';
+      this.loading = false;
       return;
     }
+
+    this.loading = true;
 
     this.presenceService.getEmployeeHistoryPaged(employeeId, this.page, 10).subscribe({
       next: (res) => {
         this.presences = res.content;
         this.totalPages = res.totalPages;
+        this.loading = false;
       },
       error: (error: Error) => {
         this.error = error.message;
+        this.loading = false;
       }
     });
   }

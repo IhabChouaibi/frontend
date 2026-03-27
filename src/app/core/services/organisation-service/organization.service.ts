@@ -14,6 +14,7 @@ import { Page } from '../../../models/recruitment/page';
 interface DepartmentApiModel extends Omit<Department, 'jobIds'> {
   jobId?: number[];
   jobIds?: number[];
+  jobs?: Job[];
 }
 
 @Injectable({
@@ -29,10 +30,7 @@ export class OrganizationService {
   getAll(query: OrganizationQueryParams = {}): Observable<Page<Department>> {
     return this.http
       .get<Page<DepartmentApiModel>>(`${this.departmentsUrl}/list`, {
-        params: this.buildParams(query, {
-          page: 0,
-          size: 10,
-        }),
+        params: this.buildParams(query, { page: 0, size: 10 }),
       })
       .pipe(
         map((pageResponse) => this.normalizePage(pageResponse, (department) => this.mapDepartment(department))),
@@ -94,11 +92,8 @@ export class OrganizationService {
 
   getAllJobs(query: OrganizationQueryParams = {}): Observable<Page<Job>> {
     return this.http
-      .get<Page<Job>>(this.jobsUrl, {
-        params: this.buildParams(query, {
-          page: 0,
-          size: 10,
-        }),
+      .get<Page<Job>>(`${this.jobsUrl}/list`, {
+        params: this.buildParams(query, { page: 0, size: 10 }),
       })
       .pipe(
         map((pageResponse) => this.normalizePage(pageResponse, (job) => job)),
@@ -207,11 +202,14 @@ export class OrganizationService {
   }
 
   private mapDepartment(department: DepartmentApiModel): Department {
-    const { jobId, jobIds, ...rest } = department;
+    const { jobId, jobIds, jobs, ...rest } = department;
 
     return {
       ...rest,
-      jobIds: jobIds ?? jobId ?? [],
+      jobIds:
+        jobIds ??
+        jobId ??
+        (jobs ?? []).map((job) => job.id).filter((id): id is number => id !== undefined),
     };
   }
 

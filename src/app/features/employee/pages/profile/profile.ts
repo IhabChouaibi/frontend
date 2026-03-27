@@ -27,7 +27,7 @@ export class Profile {
   ) {}
 
   ngOnInit(): void {
-    this.username = this.authService.getCurrentUser().username;
+    this.username = this.authService.getCurrentUser()?.username ?? null;
     this.loadProfile();
   }
 

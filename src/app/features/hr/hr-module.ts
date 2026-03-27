@@ -1,5 +1,4 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
 import { HrRoutingModule } from './hr-routing-module';
 import { Dashboard } from './pages/dashboard/dashboard';
@@ -46,7 +45,6 @@ import { LeaveTypes } from './pages/leave-types/leave-types';
   ],
   imports: [
     SharedModule,
-    CommonModule,
     HrRoutingModule
   ]
 })

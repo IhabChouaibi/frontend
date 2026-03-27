@@ -12,7 +12,7 @@ import { Interview } from '../../../../models/recruitment/interview';
 export class Interviews {
   interviews: Interview[] = [];
   showModal = false;
-  selectedApplicationId = 0;
+  selectedApplicationId: number | null = null;
 
   constructor(private readonly interviewService: InterviewService) {}
 
@@ -20,7 +20,7 @@ export class Interviews {
     this.load();
   }
 
-  openModal(applicationId: number): void {
+  openModal(applicationId: number | null = null): void {
     this.selectedApplicationId = applicationId;
     this.showModal = true;
   }

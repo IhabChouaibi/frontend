@@ -13,8 +13,7 @@ import { HasRole } from './utils/directives/has-role';
 import { Loading } from './utils/directives/loading';
 import { Navbar } from './components/navbar/navbar';
 import { SidebarComponent } from './components/sidebar/sidebar';
-import { RouterLink, RouterLinkActive } from "@angular/router";
-
+import { RouterModule } from '@angular/router';
 
 
 @NgModule({
@@ -26,19 +25,18 @@ import { RouterLink, RouterLinkActive } from "@angular/router";
     Loader,
     TruncatePipe,
     DateFormatPipe,
-     FilterPipe,
+    FilterPipe,
     HasRole,
-     Loading,
-     Navbar,
-     SidebarComponent
-
+    Loading,
+    Navbar,
+    SidebarComponent
   ],
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        RouterLink,
-        RouterLinkActive,
-    ],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule
+  ],
 
   exports: [
     AppButton,
@@ -51,7 +49,12 @@ import { RouterLink, RouterLinkActive } from "@angular/router";
     FilterPipe,
     HasRole,
     Loading,
-    CommonModule, FormsModule, ReactiveFormsModule, Navbar, SidebarComponent
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
+    Navbar,
+    SidebarComponent
   ]
 })
 export class SharedModule { }

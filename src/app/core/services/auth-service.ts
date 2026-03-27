@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, throwError, of } from 'rxjs';
-import { tap, catchError, filter, take, switchMap } from 'rxjs/operators';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 
+import { Path } from '../../enums/path';
 import { LoginRequest } from '../../models/login-request';
 import { LoginResponse } from '../../models/login-response';
 import { environment } from '../../../enviroment/enviroment';
@@ -12,245 +13,201 @@ import { environment } from '../../../enviroment/enviroment';
   providedIn: 'root'
 })
 export class AuthService {
+  private readonly baseUrl = `${environment.apiUrl}${Path.authPath}/auth`;
 
-  private baseUrl = environment.apiUrl +"auth-service/";
+  private readonly tokenSub = new BehaviorSubject<string | null>(null);
+  private readonly rolesSub = new BehaviorSubject<string[]>([]);
+  private readonly usernameSub = new BehaviorSubject<string | null>(null);
+  private readonly expirationSub = new BehaviorSubject<number | null>(null);
 
-  // ===== STATE =====
-  private tokenSub = new BehaviorSubject<string | null>(null);
-  private refreshTokenSub = new BehaviorSubject<string | null>(null);
-  private rolesSub = new BehaviorSubject<string[]>([]);
-  private usernameSub = new BehaviorSubject<string | null>(null);
-  private expirationSub = new BehaviorSubject<number | null>(null);
+  readonly token$ = this.tokenSub.asObservable();
+  readonly roles$ = this.rolesSub.asObservable();
+  readonly username$ = this.usernameSub.asObservable();
 
-  token$ = this.tokenSub.asObservable();
-  roles$ = this.rolesSub.asObservable();
-  username$ = this.usernameSub.asObservable();
+  private logoutTimer: ReturnType<typeof setTimeout> | null = null;
 
-  private refreshInProgress = false;
-  private refreshSubject = new BehaviorSubject<string | null>(null);
-
-  private refreshTimer: ReturnType<typeof setTimeout> | null = null;
-
-  constructor(private http: HttpClient, private router: Router) {
+  constructor(private readonly http: HttpClient, private readonly router: Router) {
     this.restoreSession();
   }
 
-  // ================= LOGIN =================
-
   login(req: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.baseUrl}auth/login`, req).pipe(
-      tap(res => this.storeAuth(res)),
+    return this.http.post<LoginResponse>(`${this.baseUrl}/login`, req).pipe(
+      tap((response) => this.storeAuth(response)),
       catchError(this.handleError)
     );
   }
-
-  // ================= STORE AUTH =================
-
-  private storeAuth(res: LoginResponse): void {
-
-    const expiration = Date.now() + res.expiresIn * 1000;
-
-    localStorage.setItem('accessToken', res.accessToken);
-    localStorage.setItem('refreshToken', res.refreshToken);
-    localStorage.setItem('roles', JSON.stringify(res.roles));
-    localStorage.setItem('username', res.username);
-    localStorage.setItem('expiration', expiration.toString());
-
-    this.tokenSub.next(res.accessToken);
-    this.refreshTokenSub.next(res.refreshToken);
-    this.rolesSub.next(res.roles ?? []);
-    this.usernameSub.next(res.username);
-    this.expirationSub.next(expiration);
-
-    this.startRefreshTimer(expiration);
-  }
-
-  // ================= RESTORE SESSION =================
-
-  private restoreSession(): void {
-    const token = localStorage.getItem('accessToken');
-    const refreshToken = localStorage.getItem('refreshToken');
-    const roles = localStorage.getItem('roles');
-    const username = localStorage.getItem('username');
-    const expiration = localStorage.getItem('expiration');
-
-    if (!token || !refreshToken || !expiration) return;
-
-    this.tokenSub.next(token);
-    this.refreshTokenSub.next(refreshToken);
-    this.rolesSub.next(roles ? JSON.parse(roles) : []);
-    this.usernameSub.next(username);
-    this.expirationSub.next(Number(expiration));
-
-    this.startRefreshTimer(Number(expiration));
-  }
-
-  // ================= REFRESH TOKEN =================
-
-  refreshToken(): Observable<LoginResponse> {
-
-    const refreshToken = this.refreshTokenSub.value;
-
-    if (!refreshToken) {
-      this.logout();
-      return throwError(() => new Error('No refresh token'));
-    }
-
-    if (this.refreshInProgress) {
-      return this.refreshSubject.pipe(
-        filter(Boolean),
-        take(1),
-        switchMap(token =>
-          of({
-            accessToken: token!,
-            refreshToken: this.refreshTokenSub.value!,
-            expiresIn: 0,
-            username: this.usernameSub.value!,
-            roles: this.rolesSub.value
-          })
-        )
-      );
-    }
-
-    this.refreshInProgress = true;
-    this.refreshSubject.next(null);
-
-    return this.http.post<LoginResponse>(`${this.baseUrl}auth/refresh`, { refreshToken }).pipe(
-      tap(res => {
-        this.refreshInProgress = false;
-        this.storeAuth(res);
-        this.refreshSubject.next(res.accessToken);
-      }),
-      catchError(err => {
-        this.refreshInProgress = false;
-        this.logout();
-        return throwError(() => err);
-      })
-    );
-  }
-
-  // ================= LOGOUT =================
 
   logout(): void {
     this.clearSession();
     this.router.navigate(['/login']);
   }
 
+  isAuthenticated(): boolean {
+    const token = this.tokenSub.value ?? localStorage.getItem('accessToken');
+    const expiration = this.expirationSub.value ?? Number(localStorage.getItem('expiration'));
+
+    return !!token && !!expiration && expiration > Date.now();
+  }
+
+  getRole(): string[] {
+    return this.rolesSub.value;
+  }
+
+  getToken(): string | null {
+    return this.isAuthenticated() ? localStorage.getItem('accessToken') : null;
+  }
+
+  getUsername$(): Observable<string | null> {
+    return this.username$;
+  }
+
+  getRole$(): Observable<string> {
+    return this.roles$.pipe(map((roles) => roles[0] ?? ''));
+  }
+
+  getCurrentUserId(): number | null {
+    const token = this.getToken();
+
+    if (!token) {
+      return this.readStoredNumericId();
+    }
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1] ?? '')) as Record<string, unknown>;
+      const claimKeys = ['employeeId', 'id', 'userId', 'sub'];
+
+      for (const key of claimKeys) {
+        const numericValue = this.toNumericId(payload[key]);
+
+        if (numericValue !== null) {
+          return numericValue;
+        }
+      }
+    } catch {
+      return this.readStoredNumericId();
+    }
+
+    return this.readStoredNumericId();
+  }
+
+  getCurrentUser(): { username: string | null; role: string[] } | null {
+    if (!this.isAuthenticated()) {
+      return null;
+    }
+
+    return {
+      username: this.usernameSub.value,
+      role: this.rolesSub.value
+    };
+  }
+
+  private storeAuth(response: LoginResponse): void {
+    const expiration = Date.now() + Number(response.expiresIn ?? 0) * 1000;
+    const roles = (response.roles ?? []).map((role) => role.toUpperCase());
+
+    localStorage.setItem('accessToken', response.accessToken);
+    localStorage.setItem('refreshToken', response.refreshToken ?? '');
+    localStorage.setItem('roles', JSON.stringify(roles));
+    localStorage.setItem('username', response.username ?? '');
+    localStorage.setItem('expiration', expiration.toString());
+
+    this.tokenSub.next(response.accessToken);
+    this.rolesSub.next(roles);
+    this.usernameSub.next(response.username ?? null);
+    this.expirationSub.next(expiration);
+
+    this.startLogoutTimer(expiration);
+  }
+
+  private restoreSession(): void {
+    const token = localStorage.getItem('accessToken');
+    const roles = localStorage.getItem('roles');
+    const username = localStorage.getItem('username');
+    const expiration = Number(localStorage.getItem('expiration'));
+
+    if (!token || Number.isNaN(expiration) || expiration <= Date.now()) {
+      this.clearSession();
+      return;
+    }
+
+    this.tokenSub.next(token);
+    this.rolesSub.next(roles ? JSON.parse(roles) : []);
+    this.usernameSub.next(username);
+    this.expirationSub.next(expiration);
+
+    this.startLogoutTimer(expiration);
+  }
+
   private clearSession(): void {
-    localStorage.clear();
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('roles');
+    localStorage.removeItem('username');
+    localStorage.removeItem('expiration');
+    localStorage.removeItem('employeeId');
 
     this.tokenSub.next(null);
-    this.refreshTokenSub.next(null);
     this.rolesSub.next([]);
     this.usernameSub.next(null);
     this.expirationSub.next(null);
 
-    this.stopRefreshTimer();
+    this.stopLogoutTimer();
   }
 
-  // ================= TIMER =================
-
-  private startRefreshTimer(expiration: number): void {
-
-    this.stopRefreshTimer();
+  private startLogoutTimer(expiration: number): void {
+    this.stopLogoutTimer();
 
     const timeout = expiration - Date.now() - 60000;
 
-    if (timeout <= 0) return;
+    if (timeout <= 0) {
+      this.logout();
+      return;
+    }
 
-    this.refreshTimer = setTimeout(() => {
-      this.refreshToken().subscribe();
-    }, timeout);
+    this.logoutTimer = setTimeout(() => this.logout(), timeout);
   }
 
-  private stopRefreshTimer(): void {
-    if (this.refreshTimer) {
-      clearTimeout(this.refreshTimer);
-      this.refreshTimer = null;
+  private stopLogoutTimer(): void {
+    if (this.logoutTimer) {
+      clearTimeout(this.logoutTimer);
+      this.logoutTimer = null;
     }
   }
 
-  // ================= HELPERS =================
-
-  isAuthenticated(): boolean {
-    return !!this.tokenSub.value;
-  }
-  getRole(): string[] {
-    return this.rolesSub.value;
-  }
-  getToken(): string | null {
-    return localStorage.getItem('accessToken');
-  }
-getUsername$(): Observable<string | null> {
-    return this.username$;
-}
-
-getRole$(): Observable<string> {
-    return this.roles$.pipe(
-        switchMap(roles => of(roles.length > 0 ? roles[0] : ''))
-    );
-}
-
-getCurrentUserId(): number | null {
-  const token = this.getToken();
-
-  if (!token) {
-    return this.readStoredNumericId();
+  private readStoredNumericId(): number | null {
+    return this.toNumericId(localStorage.getItem('employeeId'));
   }
 
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1] ?? '')) as Record<string, unknown>;
-    const claimKeys = ['employeeId', 'id', 'userId', 'sub'];
-
-    for (const key of claimKeys) {
-      const numericValue = this.toNumericId(payload[key]);
-
-      if (numericValue !== null) {
-        return numericValue;
-      }
+  private toNumericId(value: unknown): number | null {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
     }
-  } catch {
-    return this.readStoredNumericId();
+
+    if (typeof value === 'string' && /^\d+$/.test(value.trim())) {
+      return Number(value);
+    }
+
+    return null;
   }
-
-  return this.readStoredNumericId();
-}
-
-private readStoredNumericId(): number | null {
-  return this.toNumericId(localStorage.getItem('employeeId'));
-}
-
-private toNumericId(value: unknown): number | null {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return value;
-  }
-
-  if (typeof value === 'string' && /^\d+$/.test(value.trim())) {
-    return Number(value);
-  }
-
-  return null;
-}
-
-
-  // ================= ERROR HANDLER =================
 
   private handleError(error: HttpErrorResponse) {
-
-    let msg = 'Erreur inconnue';
+    let message = 'Erreur inconnue';
 
     switch (error.status) {
-      case 401: msg = 'Login incorrect'; break;
-      case 403: msg = 'Accès refusé'; break;
-      case 500: msg = 'Erreur serveur'; break;
+      case 0:
+        message = 'Le service d authentification est indisponible.';
+        break;
+      case 401:
+        message = 'Login incorrect';
+        break;
+      case 403:
+        message = 'Acces refuse';
+        break;
+      case 500:
+        message = 'Erreur serveur';
+        break;
     }
 
-    return throwError(() => new Error(msg));
+    return throwError(() => new Error(message));
   }
-  getCurrentUser(): { username: string | null, role: string[] } {
-  return {
-    username: this.usernameSub.value,
-    role:this.rolesSub.value
-  };
-}
 }

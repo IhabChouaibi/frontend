@@ -12,7 +12,7 @@ import { Application } from '../../../../models/recruitment/application';
 export class Applications {
   applications: Application[] = [];
   showInterviewModal = false;
-  selectedApplicationId = 0;
+  selectedApplicationId: number | null = null;
 
   constructor(private readonly appService: ApplicationService) {}
 

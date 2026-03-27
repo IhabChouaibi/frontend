@@ -1,13 +1,17 @@
 <div class="form-group">
-  <label *ngIf="label" class="form-label">{{ label }}</label>
+  <label *ngIf="label" class="form-label" [for]="inputId">{{ label }}</label>
   <input
+    [id]="inputId"
     [attr.name]="name || null"
     [type]="type"
     [placeholder]="placeholder"
     class="form-control"
+    [class.form-control--invalid]="!!errorMessage"
     [value]="value"
     [disabled]="disabled"
+    [attr.aria-invalid]="!!errorMessage"
     (input)="onInput($event)"
     (blur)="onBlur()"
   >
+  <small *ngIf="errorMessage" class="error-message">{{ errorMessage }}</small>
 </div>

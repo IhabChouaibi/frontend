@@ -1,9 +1,9 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { Login } from './pages/login/login';
+import { ResetPassword } from './pages/reset-password/reset-password';
 import { PublicLayout } from './layouts/public-layout/public-layout';
 import { HrLayout } from './layouts/hr-layout/hr-layout';
-import { audit } from 'rxjs';
 import { AuthGuard } from './core/guards/auth-guard-guard';
 import { EmployeeLayout } from './layouts/employee-layout/employee-layout';
 
@@ -16,6 +16,10 @@ const routes: Routes = [
       {
         path: 'login',
         component: Login
+      },
+      {
+        path: 'reset-password',
+        component: ResetPassword
       },
       {
         path: '',
@@ -54,12 +58,8 @@ const routes: Routes = [
       }
     ]
   },
-
   // fallback
   { path: '**', redirectTo: '' }
-
-
-
 ];
 
 @NgModule({

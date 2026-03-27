@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component, inject } from '@angular/core';
+import { FormBuilder, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+
 import { CandidateService } from '../../../core/services/recruitment/candidate';
-import { ActivatedRoute, Router } from '@angular/router';
-import { AttachmentService } from '../../../core/services/recruitment/attachment';
+import { getControlErrorMessage } from '../../../shared/utils/form-error.utils';
+import { fileExtensionValidator, fileMaxSizeValidator } from '../../../shared/utils/file-validators';
 
 @Component({
   selector: 'app-apply',
@@ -11,66 +13,71 @@ import { AttachmentService } from '../../../core/services/recruitment/attachment
   styleUrl: './apply.scss',
 })
 export class Apply {
-  form: FormGroup;
+  private readonly fb = inject(FormBuilder);
+  private readonly candidateService = inject(CandidateService);
+  private readonly route = inject(ActivatedRoute);
+
+  readonly form = this.fb.group({
+    firstName: ['', [Validators.required, Validators.minLength(2)]],
+    lastName: ['', [Validators.required, Validators.minLength(2)]],
+    email: ['', [Validators.required, Validators.email]],
+    phone: ['', [Validators.required, Validators.pattern(/^[0-9+\s()-]{8,20}$/)]],
+    cv: [null as File | null, [Validators.required, fileExtensionValidator(['pdf', 'doc', 'docx']), fileMaxSizeValidator(5 * 1024 * 1024)]]
+  });
+
   loading = false;
-  jobId : number ;
+  successMessage = '';
+  errorMessage = '';
   selectedFile: File | null = null;
-
-  constructor(
-    private fb: FormBuilder,
-    private candidateService: CandidateService,
-    private attachmentService: AttachmentService,
-    private route: ActivatedRoute,
-    private router: Router
-  ) {
-    this.form = this.fb.group({
-      name: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      phone: ['', Validators.required],
-      cv: [null, Validators.required]
-    });
-        this.jobId = +this.route.snapshot.params['id'];
-
-  }
+  jobId = 0;
 
   ngOnInit(): void {
-    this.jobId = +this.route.snapshot.params['id'];
+    this.jobId = Number(this.route.snapshot.paramMap.get('id') ?? 0);
   }
 
-  // Gestion du fichier
-  onFileChange(event: any) {
-    if (event.target.files && event.target.files.length > 0) {
-      this.selectedFile = event.target.files[0];
-      this.form.patchValue({ cv: this.selectedFile });
+  onFileChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+
+    this.selectedFile = file;
+    this.form.patchValue({ cv: file });
+    this.form.get('cv')?.markAsTouched();
+    this.form.get('cv')?.updateValueAndValidity();
+  }
+
+  submit(): void {
+    if (this.form.invalid || !this.selectedFile || !this.jobId) {
+      this.form.markAllAsTouched();
+      this.errorMessage = !this.jobId ? 'Job offer id is missing from the route.' : '';
+      return;
     }
-  }
-
-  // Soumission du formulaire
-  submit() {
-    if (this.form.invalid || !this.selectedFile) return;
 
     this.loading = true;
+    this.successMessage = '';
+    this.errorMessage = '';
 
-    // Préparer FormData pour upload
     const formData = new FormData();
-    formData.append('name', this.form.get('name')?.value);
-    formData.append('email', this.form.get('email')?.value);
-    formData.append('phone', this.form.get('phone')?.value);
+    formData.append('firstName', this.form.getRawValue().firstName ?? '');
+    formData.append('lastName', this.form.getRawValue().lastName ?? '');
+    formData.append('email', this.form.getRawValue().email ?? '');
+    formData.append('phone', this.form.getRawValue().phone ?? '');
     formData.append('cv', this.selectedFile);
 
-    // Appel CandidateService.apply()
     this.candidateService.apply(this.jobId, formData).subscribe({
-      next: (res) => {
+      next: () => {
         this.loading = false;
-        alert('Application submitted successfully!');
-        this.router.navigate(['/']);
+        this.successMessage = 'Application submitted successfully.';
+        this.form.reset();
+        this.selectedFile = null;
       },
-      error: (err) => {
+      error: (error: Error) => {
         this.loading = false;
-        console.error(err);
-        alert('Error submitting application!');
+        this.errorMessage = error.message;
       }
     });
   }
 
+  getError(controlName: string, label: string): string {
+    return getControlErrorMessage(this.form.get(controlName), label);
+  }
 }

@@ -3,6 +3,7 @@
     <app-form-input label="Start date" type="date" formControlName="startDate"></app-form-input>
     <app-form-input label="End date" type="date" formControlName="endDate"></app-form-input>
   </div>
+  <small *ngIf="dateRangeError" class="error-message">{{ dateRangeError }}</small>
 
   <div class="field-grid">
     <div class="field-stack">
@@ -11,10 +12,13 @@
         <option value="">Select type</option>
         <option *ngFor="let type of leaveTypes" [value]="type.id">{{ type.name }}</option>
       </select>
+      <small *ngIf="getError('leaveTypeId', 'Leave type')" class="error-message">
+        {{ getError('leaveTypeId', 'Leave type') }}
+      </small>
     </div>
 
     <app-form-input label="Reason" formControlName="reason" placeholder="Reason for leave"></app-form-input>
   </div>
 
-  <app-button type="submit" [loading]="loading">Submit request</app-button>
+  <app-button type="submit" [loading]="loading" [disabled]="form.invalid">Submit request</app-button>
 </form>

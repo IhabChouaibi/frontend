@@ -1,8 +1,8 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { FormBuilder, Validators, ReactiveFormsModule, FormGroup } from '@angular/forms';
-import { Subject } from 'rxjs';
+import { Component, inject } from '@angular/core';
+import { FormBuilder, Validators } from '@angular/forms';
+
 import { AuthService } from '../../core/services/auth-service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -10,34 +10,20 @@ import { ActivatedRoute, Router } from '@angular/router';
   templateUrl: './login.html',
   styleUrls: ['./login.css'],
 })
-export class Login  {
-   private fb = inject(FormBuilder);
-  private authService = inject(AuthService);
-  private router = inject(Router);
+export class Login {
+  private readonly fb = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
   loading = false;
   errorMessage: string | null = null;
 
-  // Formulaire réactif
-  loginForm = this.fb.group({
-    username: ['', Validators.required],
-    password: ['', Validators.required]
+  readonly loginForm = this.fb.group({
+    username: ['', [Validators.required, Validators.minLength(3)]],
+    password: ['', [Validators.required, Validators.minLength(6)]]
   });
 
-  // Configuration pour FormInput
-  fields = [
-    { name: 'username', label: 'Username', type: 'text', validators: [Validators.required] },
-    { name: 'password', label: 'Password', type: 'password', validators: [Validators.required] },
-  ];
-
-   get loginRequest() {
-    return {
-      username: this.loginForm.get('username')?.value || '',
-      password: this.loginForm.get('password')?.value || ''
-    };
-  }
-
-  submit() {
+  submit(): void {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
@@ -46,17 +32,32 @@ export class Login  {
     this.loading = true;
     this.errorMessage = null;
 
-    this.authService.login(this.loginRequest).subscribe({
+    this.authService.login({
+      username: this.loginForm.getRawValue().username ?? '',
+      password: this.loginForm.getRawValue().password ?? ''
+    }).subscribe({
       next: () => {
         const roles = this.authService.getRole();
-        if (roles.includes('HR')) this.router.navigate(['/hr/dashboard']);
-        else if (roles.includes('EMPLOYEE')) this.router.navigate(['/employee/dashboard']);
-        else this.router.navigate(['/dashboard']);
+
+        if (roles.includes('HR')) {
+          this.router.navigate(['/hr/dashboard']);
+          return;
+        }
+
+        if (roles.includes('EMPLOYEE')) {
+          this.router.navigate(['/employee/dashboard']);
+          return;
+        }
+
+        this.router.navigate(['/']);
       },
-      error: (err) => {
-        this.errorMessage = err?.error?.message || 'Login failed. Please check your credentials.';
+      error: (error: Error) => {
+        this.errorMessage = error.message || 'Login failed. Please check your credentials.';
+        this.loading = false;
       },
-      complete: () => this.loading = false
+      complete: () => {
+        this.loading = false;
+      }
     });
   }
 }
