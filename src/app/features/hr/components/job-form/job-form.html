@@ -1,9 +1,13 @@
 <form [formGroup]="form" (ngSubmit)="submit()" class="job-form">
   <div class="field-grid">
     <app-form-input label="Title" formControlName="title" placeholder="Job title"></app-form-input>
+    <app-form-input label="Required skills" formControlName="requiredSkills" placeholder="Angular, Spring Boot"></app-form-input>
     <app-form-input label="Location" formControlName="location" placeholder="Location"></app-form-input>
     <app-form-input label="Employment type" formControlName="employmentType" placeholder="Full time"></app-form-input>
     <app-form-input label="Experience level" formControlName="experienceLevel" placeholder="Senior"></app-form-input>
+    <app-form-input label="Salary min" type="number" formControlName="salaryMin" placeholder="1500"></app-form-input>
+    <app-form-input label="Salary max" type="number" formControlName="salaryMax" placeholder="2500"></app-form-input>
+    <app-form-input label="Organisation ID" type="number" formControlName="organisationId" placeholder="1"></app-form-input>
   </div>
 
   <div class="field-stack">

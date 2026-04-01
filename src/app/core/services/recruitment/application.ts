@@ -1,12 +1,14 @@
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
+import { Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { environment } from '../../../../enviroment/enviroment';
 import { Path } from '../../../enums/path';
-import { Application } from '../../../models/recruitment/application';
-import { Page } from '../../../models/recruitment/page';
+import { buildPageParams, createApiErrorHandler, debugApiRequest } from '../../http/api.utils';
+import { ApplicationCreateRequestDto } from '../../../models/recruitment/application-create-request.dto';
+import { ApplicationResponseDto } from '../../../models/recruitment/application-response.dto';
+import { PagedResponse } from '../../../models/shared/paged-response';
 
 @Injectable({
   providedIn: 'root',
@@ -16,70 +18,57 @@ export class ApplicationService {
 
   constructor(private readonly http: HttpClient) {}
 
-  getAllPaged(page = 0, size = 10): Observable<Page<Application>> {
-    const params = new HttpParams()
-      .set('page', String(page))
-      .set('size', String(size));
+  getAllPaged(page = 0, size = 10): Observable<PagedResponse<ApplicationResponseDto>> {
+    const params = buildPageParams(page, size);
 
     return this.http
-      .get<Page<Application>>(`${this.baseUrl}/getall`, { params })
-      .pipe(catchError(this.handleError('load applications')));
+      .get<PagedResponse<ApplicationResponseDto>>(`${this.baseUrl}/getall`, { params })
+      .pipe(catchError(createApiErrorHandler('load applications')));
   }
 
-  getById(id: number): Observable<Application> {
+  getById(id: number): Observable<ApplicationResponseDto> {
     return this.http
-      .get<Application>(`${this.baseUrl}/get/${id}`)
-      .pipe(catchError(this.handleError(`load application #${id}`)));
+      .get<ApplicationResponseDto>(`${this.baseUrl}/get/${id}`)
+      .pipe(catchError(createApiErrorHandler(`load application #${id}`)));
   }
 
-  create(application: Pick<Application, 'candidateId' | 'jobOfferId'>): Observable<Application> {
+  create(application: ApplicationCreateRequestDto): Observable<ApplicationResponseDto> {
+    debugApiRequest('POST', `${this.baseUrl}/create`, application);
+
     return this.http
-      .post<Application>(`${this.baseUrl}/create`, application)
-      .pipe(catchError(this.handleError('create application')));
+      .post<ApplicationResponseDto>(`${this.baseUrl}/create`, application)
+      .pipe(catchError(createApiErrorHandler('create application')));
   }
 
-  updateStatus(id: number, status: string): Observable<Application> {
+  updateStatus(id: number, status: string): Observable<ApplicationResponseDto> {
+    debugApiRequest('PUT', `${this.baseUrl}/update/${id}`, status);
+
     return this.http
-      .put<Application>(`${this.baseUrl}/update/${id}`, status, {
+      .put<ApplicationResponseDto>(`${this.baseUrl}/update/${id}`, status, {
         headers: { 'Content-Type': 'text/plain' }
       })
-      .pipe(catchError(this.handleError(`update application #${id}`)));
+      .pipe(catchError(createApiErrorHandler(`update application #${id}`)));
   }
 
   delete(id: number): Observable<void> {
     return this.http
       .delete<void>(`${this.baseUrl}/delete/${id}`)
-      .pipe(catchError(this.handleError(`delete application #${id}`)));
+      .pipe(catchError(createApiErrorHandler(`delete application #${id}`)));
   }
 
-  approve(id: number): Observable<Application> {
+  approve(id: number): Observable<ApplicationResponseDto> {
     return this.updateStatus(id, 'APPROVED');
   }
 
-  reject(id: number): Observable<Application> {
+  reject(id: number): Observable<ApplicationResponseDto> {
     return this.updateStatus(id, 'REJECTED');
   }
 
-  getByCandidatePaged(candidateId: number, page = 0, size = 10): Observable<Page<Application>> {
-    const params = new HttpParams()
-      .set('page', String(page))
-      .set('size', String(size));
+  getByCandidatePaged(candidateId: number, page = 0, size = 10): Observable<PagedResponse<ApplicationResponseDto>> {
+    const params = buildPageParams(page, size);
 
     return this.http
-      .get<Page<Application>>(`${this.baseUrl}/getall/${candidateId}`, { params })
-      .pipe(catchError(this.handleError(`load applications for candidate #${candidateId}`)));
-  }
-
-  private handleError(operation: string) {
-    return (error: HttpErrorResponse): Observable<never> => {
-      const serverMessage =
-        typeof error.error === 'string'
-          ? error.error
-          : error.error?.message ?? error.error?.error ?? error.message;
-
-      return throwError(
-        () => new Error(serverMessage || `Unable to ${operation}. Please try again.`)
-      );
-    };
+      .get<PagedResponse<ApplicationResponseDto>>(`${this.baseUrl}/getall/${candidateId}`, { params })
+      .pipe(catchError(createApiErrorHandler(`load applications for candidate #${candidateId}`)));
   }
 }

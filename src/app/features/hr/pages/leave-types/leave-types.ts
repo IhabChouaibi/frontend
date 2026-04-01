@@ -2,7 +2,8 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 
 import { LeaveTypeService } from '../../../../core/services/leave-service/leave-type-service';
-import { LeaveType } from '../../../../models/leave-service/leave-type';
+import { LeaveTypeDto } from '../../../../models/leave-service/leave-type.dto';
+import { toOptionalNumber, toRequiredTrimmedString } from '../../../../shared/utils/payload.utils';
 
 @Component({
   selector: 'app-leave-types',
@@ -18,10 +19,11 @@ export class LeaveTypes {
     paid: ['YES', Validators.required],
     requiresApproval: ['YES', Validators.required],
     requiresDocument: ['NO', Validators.required],
+    deductFromBalance: [false],
     maxDaysPerYear: [20, [Validators.required, Validators.min(1)]]
   });
 
-  leaveTypes: LeaveType[] = [];
+  leaveTypes: LeaveTypeDto[] = [];
   showModal = false;
   selectedId: number | null = null;
   loading = false;
@@ -40,12 +42,13 @@ export class LeaveTypes {
       paid: 'YES',
       requiresApproval: 'YES',
       requiresDocument: 'NO',
+      deductFromBalance: false,
       maxDaysPerYear: 20
     });
     this.showModal = true;
   }
 
-  openEdit(item: LeaveType): void {
+  openEdit(item: LeaveTypeDto): void {
     this.selectedId = item.id || null;
     this.form.patchValue(item);
     this.showModal = true;
@@ -60,7 +63,14 @@ export class LeaveTypes {
     this.saving = true;
     this.error = '';
 
-    const payload = this.form.getRawValue() as LeaveType;
+    const payload: LeaveTypeDto = {
+      name: toRequiredTrimmedString(this.form.getRawValue().name),
+      paid: toRequiredTrimmedString(this.form.getRawValue().paid),
+      requiresApproval: toRequiredTrimmedString(this.form.getRawValue().requiresApproval),
+      requiresDocument: toRequiredTrimmedString(this.form.getRawValue().requiresDocument),
+      deductFromBalance: Boolean(this.form.getRawValue().deductFromBalance),
+      maxDaysPerYear: toOptionalNumber(this.form.getRawValue().maxDaysPerYear),
+    };
     const request$ = this.selectedId
       ? this.leaveTypeService.update(this.selectedId, payload)
       : this.leaveTypeService.create(payload);
@@ -78,7 +88,7 @@ export class LeaveTypes {
     });
   }
 
-  delete(item: LeaveType): void {
+  delete(item: LeaveTypeDto): void {
     if (!item.id) {
       return;
     }

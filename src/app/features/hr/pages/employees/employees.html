@@ -45,6 +45,8 @@
       [form]="form"
       [departments]="departments"
       [jobs]="jobs"
+      [isCreateMode]="!selectedId"
+      [usernamePreview]="usernamePreview"
       [loading]="saving"
       (submitted)="submit()"
     ></app-employee-form>

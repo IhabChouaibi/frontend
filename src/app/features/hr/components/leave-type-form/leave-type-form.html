@@ -28,6 +28,14 @@
         <option value="NO">NO</option>
       </select>
     </div>
+
+    <div class="field-stack">
+      <label for="deductFromBalance">Deduct from balance</label>
+      <select id="deductFromBalance" formControlName="deductFromBalance">
+        <option [ngValue]="true">YES</option>
+        <option [ngValue]="false">NO</option>
+      </select>
+    </div>
   </div>
 
   <app-button type="submit" [loading]="loading" [disabled]="form.invalid">Save leave type</app-button>

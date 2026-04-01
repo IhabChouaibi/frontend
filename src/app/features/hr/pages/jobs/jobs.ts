@@ -4,8 +4,10 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { DepartmentService } from '../../../../core/services/organisation-service/department-service';
 import { JobService } from '../../../../core/services/organisation-service/job-service';
 import { OrganizationService } from '../../../../core/services/organisation-service/organization.service';
-import { Department } from '../../../../models/organisation-service/department';
-import { Job } from '../../../../models/organisation-service/job';
+import { DepartmentResponseDto } from '../../../../models/organisation-service/department-response.dto';
+import { JobRequestDto } from '../../../../models/organisation-service/job-request.dto';
+import { JobResponseDto } from '../../../../models/organisation-service/job-response.dto';
+import { toOptionalNumber, toOptionalTrimmedString, toRequiredTrimmedString } from '../../../../shared/utils/payload.utils';
 
 @Component({
   selector: 'app-jobs',
@@ -22,8 +24,8 @@ export class Jobs {
     departmentId: ['', Validators.required]
   });
 
-  jobs: Job[] = [];
-  departments: Department[] = [];
+  jobs: JobResponseDto[] = [];
+  departments: DepartmentResponseDto[] = [];
   showModal = false;
   error = '';
 
@@ -48,10 +50,19 @@ export class Jobs {
       return;
     }
 
-    this.jobService.addJob({
-      title: this.form.getRawValue().title || '',
-      level: this.form.getRawValue().level || ''
-    }, Number(this.form.getRawValue().departmentId)).subscribe({
+    const departmentId = toOptionalNumber(this.form.getRawValue().departmentId);
+
+    if (departmentId === undefined) {
+      this.error = 'Department is required.';
+      return;
+    }
+
+    const payload: JobRequestDto = {
+      title: toRequiredTrimmedString(this.form.getRawValue().title),
+      level: toOptionalTrimmedString(this.form.getRawValue().level),
+    };
+
+    this.jobService.addJob(payload, departmentId).subscribe({
       next: () => {
         this.showModal = false;
         this.load();
@@ -60,7 +71,7 @@ export class Jobs {
     });
   }
 
-  delete(job: Job): void {
+  delete(job: JobResponseDto): void {
     if (!job.id) {
       return;
     }

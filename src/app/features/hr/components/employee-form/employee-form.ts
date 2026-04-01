@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 
-import { Department } from '../../../../models/organisation-service/department';
-import { Job } from '../../../../models/organisation-service/job';
+import { DepartmentResponseDto } from '../../../../models/organisation-service/department-response.dto';
+import { JobResponseDto } from '../../../../models/organisation-service/job-response.dto';
 import { getControlErrorMessage } from '../../../../shared/utils/form-error.utils';
 
 @Component({
@@ -13,8 +13,10 @@ import { getControlErrorMessage } from '../../../../shared/utils/form-error.util
 })
 export class EmployeeFormComponent {
   @Input({ required: true }) form!: FormGroup;
-  @Input() departments: Department[] = [];
-  @Input() jobs: Job[] = [];
+  @Input() departments: DepartmentResponseDto[] = [];
+  @Input() jobs: JobResponseDto[] = [];
+  @Input() isCreateMode = false;
+  @Input() usernamePreview = '';
   @Input() loading = false;
   @Output() submitted = new EventEmitter<void>();
 

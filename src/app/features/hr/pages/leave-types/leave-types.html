@@ -14,12 +14,13 @@
   <div *ngIf="error" class="error-message">{{ error }}</div>
 
   <article class="surface-card">
-    <app-table [data]="leaveTypes" [columns]="['Name', 'Paid', 'Approval', 'Document', 'Max days', 'Actions']">
+    <app-table [data]="leaveTypes" [columns]="['Name', 'Paid', 'Approval', 'Document', 'Deduct', 'Max days', 'Actions']">
       <ng-template let-item>
         <td>{{ item.name }}</td>
         <td>{{ item.paid }}</td>
         <td>{{ item.requiresApproval }}</td>
         <td>{{ item.requiresDocument }}</td>
+        <td>{{ item.deductFromBalance ? 'YES' : 'NO' }}</td>
         <td>{{ item.maxDaysPerYear || '-' }}</td>
         <td class="row-actions">
           <app-button variant="secondary" (click)="openEdit(item)">Edit</app-button>

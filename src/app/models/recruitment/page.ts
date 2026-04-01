@@ -1,10 +1,1 @@
-export interface Page<T> {
-  content: T[];           
-  totalElements: number;  
-  totalPages: number;     
-  size: number;           
-  number: number;         
-  first: boolean;         
-  last: boolean;         
-  numberOfElements: number; 
-}
+export type { PagedResponse as Page } from '../shared/paged-response';

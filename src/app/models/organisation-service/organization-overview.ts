@@ -1,7 +1,7 @@
-import { Department } from './department';
-import { Job } from './job';
+import { DepartmentResponseDto } from './department-response.dto';
+import { JobResponseDto } from './job-response.dto';
 
 export interface OrganizationOverview {
-  departments: Department[];
-  jobs: Job[];
+  departments: DepartmentResponseDto[];
+  jobs: JobResponseDto[];
 }

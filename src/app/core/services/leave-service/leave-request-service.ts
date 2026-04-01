@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { CreateLeaveRequest } from '../../../models/leave-service/create-leave-request';
-import { Leave } from '../../../models/leave-service/leave';
-import { UpdateLeaveRequest } from '../../../models/leave-service/update-leave-request';
-import { Page } from '../../../models/recruitment/page';
+import { CreateLeaveRequestDto } from '../../../models/leave-service/create-leave-request.dto';
+import { LeaveRequestResponseDto } from '../../../models/leave-service/leave-request-response.dto';
+import { UpdateLeaveRequestDto } from '../../../models/leave-service/update-leave-request.dto';
+import { PagedResponse } from '../../../models/shared/paged-response';
 import { LeaveService } from './leave.service';
 
 @Injectable({
@@ -13,11 +13,11 @@ import { LeaveService } from './leave.service';
 export class LeaveRequestService {
   constructor(private readonly leaveService: LeaveService) {}
 
-  submitLeaveRequest(leave: CreateLeaveRequest): Observable<Leave> {
+  submitLeaveRequest(leave: CreateLeaveRequestDto): Observable<LeaveRequestResponseDto> {
     return this.leaveService.requestLeave(leave);
   }
 
-  updateLeaveRequest(id: number, leaveUpdate: UpdateLeaveRequest): Observable<Leave> {
+  updateLeaveRequest(id: number, leaveUpdate: UpdateLeaveRequestDto): Observable<LeaveRequestResponseDto> {
     return this.leaveService.update(id, leaveUpdate);
   }
 
@@ -25,7 +25,7 @@ export class LeaveRequestService {
     return this.leaveService.cancelLeave(id, employeeId);
   }
 
-  getPendingLeaveRequests(page: number = 0, size: number = 10): Observable<Page<Leave>> {
+  getPendingLeaveRequests(page: number = 0, size: number = 10): Observable<PagedResponse<LeaveRequestResponseDto>> {
     return this.leaveService.getPending(page, size);
   }
 }

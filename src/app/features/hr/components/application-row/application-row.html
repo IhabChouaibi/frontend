@@ -8,5 +8,6 @@
     <app-button variant="secondary" [loading]="loadingApprove" (click)="approve()">Approve</app-button>
     <app-button variant="danger" [loading]="loadingReject" (click)="reject()">Reject</app-button>
     <app-button variant="ghost" (click)="schedule.emit(application.id || 0)">Schedule</app-button>
+    <small *ngIf="errorMessage" class="error-message">{{ errorMessage }}</small>
   </td>
 </tr>

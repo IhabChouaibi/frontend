@@ -4,8 +4,14 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth-service';
 import { LeaveRequestService } from '../../../../core/services/leave-service/leave-request-service';
 import { LeaveTypeService } from '../../../../core/services/leave-service/leave-type-service';
-import { LeaveType } from '../../../../models/leave-service/leave-type';
+import { CreateLeaveRequestDto } from '../../../../models/leave-service/create-leave-request.dto';
+import { LeaveTypeDto } from '../../../../models/leave-service/leave-type.dto';
 import { dateRangeValidator } from '../../../../shared/utils/form-validators';
+import {
+  toOptionalLocalDate,
+  toOptionalNumber,
+  toOptionalTrimmedString,
+} from '../../../../shared/utils/payload.utils';
 
 @Component({
   selector: 'app-leave-request',
@@ -25,7 +31,7 @@ export class LeaveRequest {
     validators: dateRangeValidator('startDate', 'endDate')
   });
 
-  leaveTypes: LeaveType[] = [];
+  leaveTypes: LeaveTypeDto[] = [];
   loading = false;
   success = '';
   error = '';
@@ -49,7 +55,7 @@ export class LeaveRequest {
   }
 
   submit(): void {
-    const employeeId = this.authService.getCurrentUserId();
+    const employeeId = this.authService.getEmployeeId();
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -65,13 +71,23 @@ export class LeaveRequest {
     this.success = '';
     this.error = '';
 
-    this.leaveService.submitLeaveRequest({
+    const leaveTypeId = toOptionalNumber(this.form.getRawValue().leaveTypeId);
+
+    if (leaveTypeId === undefined) {
+      this.error = 'Leave type is required.';
+      this.loading = false;
+      return;
+    }
+
+    const payload: CreateLeaveRequestDto = {
       employeeId,
-      startDate: this.form.getRawValue().startDate ?? '',
-      endDate: this.form.getRawValue().endDate ?? '',
-      reason: this.form.getRawValue().reason ?? '',
-      leaveTypeId: Number(this.form.getRawValue().leaveTypeId)
-    }).subscribe({
+      startDate: toOptionalLocalDate(this.form.getRawValue().startDate) ?? '',
+      endDate: toOptionalLocalDate(this.form.getRawValue().endDate) ?? '',
+      reason: toOptionalTrimmedString(this.form.getRawValue().reason),
+      leaveTypeId,
+    };
+
+    this.leaveService.submitLeaveRequest(payload).subscribe({
       next: () => {
         this.success = 'Leave request submitted successfully.';
         this.form.reset();

@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 
 import { AuthService } from '../../../../core/services/auth-service';
 import { PresenceService } from '../../../../core/services/presence-service/presence.service';
-import { Presence } from '../../../../models/presence-service/presence';
+import { PresenceResponseDto } from '../../../../models/presence-service/presence-response.dto';
 
 @Component({
   selector: 'app-presence',
@@ -14,7 +14,7 @@ export class PresenceComponent {
   loading = false;
   message = '';
   error = '';
-  presences: Presence[] = [];
+  presences: PresenceResponseDto[] = [];
   page = 0;
   totalPages = 0;
 
@@ -28,7 +28,7 @@ export class PresenceComponent {
   }
 
   checkIn(): void {
-    const employeeId = this.authService.getCurrentUserId();
+    const employeeId = this.authService.getEmployeeId();
 
     if (!employeeId) {
       this.error = 'Employee id is missing.';
@@ -53,7 +53,7 @@ export class PresenceComponent {
   }
 
   checkOut(): void {
-    const employeeId = this.authService.getCurrentUserId();
+    const employeeId = this.authService.getEmployeeId();
 
     if (!employeeId) {
       this.error = 'Employee id is missing.';
@@ -89,7 +89,7 @@ export class PresenceComponent {
   }
 
   private loadHistory(): void {
-    const employeeId = this.authService.getCurrentUserId();
+    const employeeId = this.authService.getEmployeeId();
 
     if (!employeeId) {
       this.error = 'Employee id is missing.';

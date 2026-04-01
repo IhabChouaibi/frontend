@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { LeaveType } from '../../../models/leave-service/leave-type';
-import { Page } from '../../../models/recruitment/page';
+import { LeaveTypeDto } from '../../../models/leave-service/leave-type.dto';
+import { PagedResponse } from '../../../models/shared/paged-response';
 import { LeaveService } from './leave.service';
 
 @Injectable({
@@ -11,19 +11,19 @@ import { LeaveService } from './leave.service';
 export class LeaveTypeService {
   constructor(private readonly leaveService: LeaveService) {}
 
-  create(leaveType: LeaveType): Observable<LeaveType> {
+  create(leaveType: LeaveTypeDto): Observable<LeaveTypeDto> {
     return this.leaveService.createLeaveType(leaveType);
   }
 
-  update(id: number, leaveType: LeaveType): Observable<LeaveType> {
+  update(id: number, leaveType: LeaveTypeDto): Observable<LeaveTypeDto> {
     return this.leaveService.updateLeaveType(id, leaveType);
   }
 
-  findById(id: number): Observable<LeaveType> {
+  findById(id: number): Observable<LeaveTypeDto> {
     return this.leaveService.getLeaveTypeById(id);
   }
 
-  findByPage(page: number = 0, size: number = 10): Observable<Page<LeaveType>> {
+  findByPage(page: number = 0, size: number = 10): Observable<PagedResponse<LeaveTypeDto>> {
     return this.leaveService.getLeaveTypes(page, size);
   }
 

@@ -3,8 +3,14 @@ import { FormBuilder, Validators } from '@angular/forms';
 
 import { InterviewService } from '../../../../core/services/recruitment/interview';
 import { AuthService } from '../../../../core/services/auth-service';
+import { InterviewRequestDto } from '../../../../models/recruitment/interview-request.dto';
 import { futureDateValidator } from '../../../../shared/utils/form-validators';
 import { getControlErrorMessage } from '../../../../shared/utils/form-error.utils';
+import {
+  toOptionalLocalDateTime,
+  toOptionalNumber,
+  toRequiredTrimmedString,
+} from '../../../../shared/utils/payload.utils';
 
 @Component({
   selector: 'app-interview-modal',
@@ -33,7 +39,7 @@ export class InterviewModal {
   });
 
   ngOnChanges(): void {
-    const interviewerId = this.authService.getCurrentUserId();
+    const interviewerId = this.authService.getEmployeeId();
 
     this.form.patchValue({
       applicationId: this.applicationId ? String(this.applicationId) : '',
@@ -50,12 +56,24 @@ export class InterviewModal {
     this.loading = true;
     this.errorMessage = '';
 
-    this.interviewService.schedule({
-      applicationId: Number(this.form.getRawValue().applicationId),
-      interviewerId: Number(this.form.getRawValue().interviewerId),
-      interviewDate: this.form.getRawValue().interviewDate ?? '',
-      type: this.form.getRawValue().type ?? 'Video interview'
-    }).subscribe({
+    const applicationId = toOptionalNumber(this.form.getRawValue().applicationId);
+    const interviewerId = toOptionalNumber(this.form.getRawValue().interviewerId);
+    const interviewDate = toOptionalLocalDateTime(this.form.getRawValue().interviewDate);
+
+    if (applicationId === undefined || interviewerId === undefined || !interviewDate) {
+      this.loading = false;
+      this.errorMessage = 'Application, interviewer and interview date are required.';
+      return;
+    }
+
+    const payload: InterviewRequestDto = {
+      applicationId,
+      interviewerId,
+      interviewDate,
+      type: toRequiredTrimmedString(this.form.getRawValue().type || 'Video interview'),
+    };
+
+    this.interviewService.schedule(payload).subscribe({
       next: () => {
         this.loading = false;
         this.form.reset({

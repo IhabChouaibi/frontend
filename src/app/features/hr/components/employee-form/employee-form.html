@@ -1,4 +1,13 @@
 <form [formGroup]="form" (ngSubmit)="submitted.emit()" class="employee-form">
+  <div *ngIf="isCreateMode" class="field-grid">
+    <app-form-input label="Password" type="password" formControlName="password" placeholder="Temporary password"></app-form-input>
+
+    <div class="field-stack">
+      <label>Generated username</label>
+      <div class="form-control">{{ usernamePreview || 'Fill first and last name to generate the username.' }}</div>
+    </div>
+  </div>
+
   <div class="field-grid">
     <app-form-input label="First name" formControlName="firstName" placeholder="First name"></app-form-input>
     <app-form-input label="Last name" formControlName="lastName" placeholder="Last name"></app-form-input>

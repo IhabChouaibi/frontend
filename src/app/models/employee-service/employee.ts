@@ -10,4 +10,6 @@ export interface Employee {
   status?: string;
   departmentId?: number;
   jobId?: number;
+  jobTitle?: string;
+  departmentCode?: string;
 }

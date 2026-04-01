@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 
 import { Path } from '../../enums/path';
@@ -19,10 +19,12 @@ export class AuthService {
   private readonly rolesSub = new BehaviorSubject<string[]>([]);
   private readonly usernameSub = new BehaviorSubject<string | null>(null);
   private readonly expirationSub = new BehaviorSubject<number | null>(null);
+  private readonly employeeIdSub = new BehaviorSubject<number | null>(null);
 
   readonly token$ = this.tokenSub.asObservable();
   readonly roles$ = this.rolesSub.asObservable();
   readonly username$ = this.usernameSub.asObservable();
+  readonly employeeId$ = this.employeeIdSub.asObservable();
 
   private logoutTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -57,6 +59,10 @@ export class AuthService {
     return this.isAuthenticated() ? localStorage.getItem('accessToken') : null;
   }
 
+  getEmployeeId(): number | null {
+    return this.employeeIdSub.value;
+  }
+
   getUsername$(): Observable<string | null> {
     return this.username$;
   }
@@ -66,38 +72,18 @@ export class AuthService {
   }
 
   getCurrentUserId(): number | null {
-    const token = this.getToken();
-
-    if (!token) {
-      return this.readStoredNumericId();
-    }
-
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1] ?? '')) as Record<string, unknown>;
-      const claimKeys = ['employeeId', 'id', 'userId', 'sub'];
-
-      for (const key of claimKeys) {
-        const numericValue = this.toNumericId(payload[key]);
-
-        if (numericValue !== null) {
-          return numericValue;
-        }
-      }
-    } catch {
-      return this.readStoredNumericId();
-    }
-
-    return this.readStoredNumericId();
+    return this.getEmployeeId();
   }
 
-  getCurrentUser(): { username: string | null; role: string[] } | null {
+  getCurrentUser(): { username: string | null; roles: string[]; employeeId: number | null } | null {
     if (!this.isAuthenticated()) {
       return null;
     }
 
     return {
       username: this.usernameSub.value,
-      role: this.rolesSub.value
+      roles: this.rolesSub.value,
+      employeeId: this.employeeIdSub.value
     };
   }
 
@@ -111,10 +97,18 @@ export class AuthService {
     localStorage.setItem('username', response.username ?? '');
     localStorage.setItem('expiration', expiration.toString());
 
+    const employeeId = this.toNumericId(response.employeeId);
+    if (employeeId !== null) {
+      localStorage.setItem('employeeId', employeeId.toString());
+    } else {
+      localStorage.removeItem('employeeId');
+    }
+
     this.tokenSub.next(response.accessToken);
     this.rolesSub.next(roles);
     this.usernameSub.next(response.username ?? null);
     this.expirationSub.next(expiration);
+    this.employeeIdSub.next(employeeId);
 
     this.startLogoutTimer(expiration);
   }
@@ -124,6 +118,7 @@ export class AuthService {
     const roles = localStorage.getItem('roles');
     const username = localStorage.getItem('username');
     const expiration = Number(localStorage.getItem('expiration'));
+    const employeeId = this.readStoredNumericId();
 
     if (!token || Number.isNaN(expiration) || expiration <= Date.now()) {
       this.clearSession();
@@ -134,6 +129,7 @@ export class AuthService {
     this.rolesSub.next(roles ? JSON.parse(roles) : []);
     this.usernameSub.next(username);
     this.expirationSub.next(expiration);
+    this.employeeIdSub.next(employeeId);
 
     this.startLogoutTimer(expiration);
   }
@@ -150,6 +146,7 @@ export class AuthService {
     this.rolesSub.next([]);
     this.usernameSub.next(null);
     this.expirationSub.next(null);
+    this.employeeIdSub.next(null);
 
     this.stopLogoutTimer();
   }

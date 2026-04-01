@@ -26,7 +26,7 @@ export class Navbar {
     if (this.authService.isAuthenticated()) {
       const user = this.authService.getCurrentUser();
       this.username = user?.username ?? null;
-      this.role = user?.role.length ? user.role[0] : null;
+      this.role = user?.roles.length ? user.roles[0] : null;
     } else {
       this.username = null;
       this.role = null;

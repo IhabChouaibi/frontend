@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { Leave } from '../../../models/leave-service/leave';
-import { RejectLeaveRequest } from '../../../models/leave-service/reject-leave-request';
+import { LeaveRequestResponseDto } from '../../../models/leave-service/leave-request-response.dto';
+import { RejectLeaveRequestDto } from '../../../models/leave-service/reject-leave-request.dto';
 import { LeaveService } from './leave.service';
 
 @Injectable({
@@ -11,11 +11,15 @@ import { LeaveService } from './leave.service';
 export class LeaveValidationService {
   constructor(private readonly leaveService: LeaveService) {}
 
-  approveLeaveRequest(requestId: number, managerId: number): Observable<Leave> {
+  approveLeaveRequest(requestId: number, managerId: number): Observable<LeaveRequestResponseDto> {
     return this.leaveService.approveLeave(requestId, managerId);
   }
 
-  rejectLeaveRequest(requestId: number, managerId: number, rejectReason: RejectLeaveRequest): Observable<Leave> {
+  rejectLeaveRequest(
+    requestId: number,
+    managerId: number,
+    rejectReason: RejectLeaveRequestDto
+  ): Observable<LeaveRequestResponseDto> {
     return this.leaveService.rejectLeave(requestId, managerId, rejectReason);
   }
 }

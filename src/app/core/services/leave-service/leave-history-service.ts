@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { Leave } from '../../../models/leave-service/leave';
-import { Page } from '../../../models/recruitment/page';
+import { LeaveRequestResponseDto } from '../../../models/leave-service/leave-request-response.dto';
+import { PagedResponse } from '../../../models/shared/paged-response';
 import { LeaveService } from './leave.service';
 
 @Injectable({
@@ -11,11 +11,20 @@ import { LeaveService } from './leave.service';
 export class LeaveHistoryService {
   constructor(private readonly leaveService: LeaveService) {}
 
-  getByEmployeePaged(employeeId: number, page: number = 0, size: number = 10): Observable<Page<Leave>> {
+  getByEmployeePaged(
+    employeeId: number,
+    page: number = 0,
+    size: number = 10
+  ): Observable<PagedResponse<LeaveRequestResponseDto>> {
     return this.leaveService.getByEmployee(employeeId, { page, size });
   }
 
-  getByTypePaged(employeeId: number, leaveTypeId: number, page: number = 0, size: number = 10): Observable<Page<Leave>> {
+  getByTypePaged(
+    employeeId: number,
+    leaveTypeId: number,
+    page: number = 0,
+    size: number = 10
+  ): Observable<PagedResponse<LeaveRequestResponseDto>> {
     return this.leaveService.getByEmployee(employeeId, {
       page,
       size,

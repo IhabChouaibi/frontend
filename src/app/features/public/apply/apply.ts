@@ -3,8 +3,10 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
 import { CandidateService } from '../../../core/services/recruitment/candidate';
+import { CandidateRequestDto } from '../../../models/recruitment/candidate-request.dto';
 import { getControlErrorMessage } from '../../../shared/utils/form-error.utils';
 import { fileExtensionValidator, fileMaxSizeValidator } from '../../../shared/utils/file-validators';
+import { toOptionalTrimmedString, toRequiredTrimmedString } from '../../../shared/utils/payload.utils';
 
 @Component({
   selector: 'app-apply',
@@ -56,14 +58,14 @@ export class Apply {
     this.successMessage = '';
     this.errorMessage = '';
 
-    const formData = new FormData();
-    formData.append('firstName', this.form.getRawValue().firstName ?? '');
-    formData.append('lastName', this.form.getRawValue().lastName ?? '');
-    formData.append('email', this.form.getRawValue().email ?? '');
-    formData.append('phone', this.form.getRawValue().phone ?? '');
-    formData.append('cv', this.selectedFile);
+    const payload: CandidateRequestDto = {
+      firstName: toRequiredTrimmedString(this.form.getRawValue().firstName),
+      lastName: toRequiredTrimmedString(this.form.getRawValue().lastName),
+      email: toRequiredTrimmedString(this.form.getRawValue().email),
+      phone: toOptionalTrimmedString(this.form.getRawValue().phone),
+    };
 
-    this.candidateService.apply(this.jobId, formData).subscribe({
+    this.candidateService.apply(this.jobId, payload, this.selectedFile).subscribe({
       next: () => {
         this.loading = false;
         this.successMessage = 'Application submitted successfully.';

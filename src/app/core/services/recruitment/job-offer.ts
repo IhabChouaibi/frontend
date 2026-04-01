@@ -1,12 +1,14 @@
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
+import { Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { environment } from '../../../../enviroment/enviroment';
 import { Path } from '../../../enums/path';
-import { JobOffer } from '../../../models/recruitment/job-offer';
-import { Page } from '../../../models/recruitment/page';
+import { buildPageParams, createApiErrorHandler, debugApiRequest } from '../../http/api.utils';
+import { JobOfferRequestDto } from '../../../models/recruitment/job-offer-request.dto';
+import { JobOfferResponseDto } from '../../../models/recruitment/job-offer-response.dto';
+import { PagedResponse } from '../../../models/shared/paged-response';
 
 @Injectable({
   providedIn: 'root',
@@ -16,54 +18,39 @@ export class JobOfferService {
 
   constructor(private readonly http: HttpClient) {}
 
-  getAllPaged(page = 0, size = 10, search?: string): Observable<Page<JobOffer>> {
-    let params = new HttpParams()
-      .set('page', String(page))
-      .set('size', String(size));
-
-    if (search?.trim()) {
-      params = params.set('search', search.trim());
-    }
+  getAllPaged(page = 0, size = 10): Observable<PagedResponse<JobOfferResponseDto>> {
+    const params = buildPageParams(page, size);
 
     return this.http
-      .get<Page<JobOffer>>(`${this.baseUrl}/getall`, { params })
-      .pipe(catchError(this.handleError('load job offers')));
+      .get<PagedResponse<JobOfferResponseDto>>(`${this.baseUrl}/getall`, { params })
+      .pipe(catchError(createApiErrorHandler('load job offers')));
   }
 
-  getById(id: number): Observable<JobOffer> {
+  getById(id: number): Observable<JobOfferResponseDto> {
     return this.http
-      .get<JobOffer>(`${this.baseUrl}/get/${id}`)
-      .pipe(catchError(this.handleError(`load job offer #${id}`)));
+      .get<JobOfferResponseDto>(`${this.baseUrl}/get/${id}`)
+      .pipe(catchError(createApiErrorHandler(`load job offer #${id}`)));
   }
 
-  create(jobOffer: JobOffer): Observable<JobOffer> {
+  create(jobOffer: JobOfferRequestDto): Observable<JobOfferResponseDto> {
+    debugApiRequest('POST', `${this.baseUrl}/create`, jobOffer);
+
     return this.http
-      .post<JobOffer>(`${this.baseUrl}/create`, jobOffer)
-      .pipe(catchError(this.handleError('create job offer')));
+      .post<JobOfferResponseDto>(`${this.baseUrl}/create`, jobOffer)
+      .pipe(catchError(createApiErrorHandler('create job offer')));
   }
 
-  update(id: number, jobOffer: JobOffer): Observable<JobOffer> {
+  update(id: number, jobOffer: JobOfferRequestDto): Observable<JobOfferResponseDto> {
+    debugApiRequest('PATCH', `${this.baseUrl}/update/${id}`, jobOffer);
+
     return this.http
-      .patch<JobOffer>(`${this.baseUrl}/update/${id}`, jobOffer)
-      .pipe(catchError(this.handleError(`update job offer #${id}`)));
+      .patch<JobOfferResponseDto>(`${this.baseUrl}/update/${id}`, jobOffer)
+      .pipe(catchError(createApiErrorHandler(`update job offer #${id}`)));
   }
 
   delete(id: number): Observable<void> {
     return this.http
       .delete<void>(`${this.baseUrl}/delete/${id}`)
-      .pipe(catchError(this.handleError(`delete job offer #${id}`)));
-  }
-
-  private handleError(operation: string) {
-    return (error: HttpErrorResponse): Observable<never> => {
-      const serverMessage =
-        typeof error.error === 'string'
-          ? error.error
-          : error.error?.message ?? error.error?.error ?? error.message;
-
-      return throwError(
-        () => new Error(serverMessage || `Unable to ${operation}. Please try again.`)
-      );
-    };
+      .pipe(catchError(createApiErrorHandler(`delete job offer #${id}`)));
   }
 }

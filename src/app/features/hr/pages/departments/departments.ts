@@ -2,7 +2,9 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 
 import { DepartmentService } from '../../../../core/services/organisation-service/department-service';
-import { Department } from '../../../../models/organisation-service/department';
+import { DepartmentRequestDto } from '../../../../models/organisation-service/department-request.dto';
+import { DepartmentResponseDto } from '../../../../models/organisation-service/department-response.dto';
+import { toRequiredTrimmedString } from '../../../../shared/utils/payload.utils';
 
 @Component({
   selector: 'app-departments',
@@ -18,7 +20,7 @@ export class Departments {
     code: ['', Validators.required]
   });
 
-  departments: Department[] = [];
+  departments: DepartmentResponseDto[] = [];
   loading = false;
   error = '';
   showModal = false;
@@ -40,9 +42,12 @@ export class Departments {
     this.showModal = true;
   }
 
-  openEdit(item: Department): void {
+  openEdit(item: DepartmentResponseDto): void {
     this.selectedId = item.id || null;
-    this.form.patchValue(item);
+    this.form.patchValue({
+      name: item.name,
+      code: item.code,
+    });
     this.showModal = true;
   }
 
@@ -52,9 +57,14 @@ export class Departments {
       return;
     }
 
+    const payload: DepartmentRequestDto = {
+      name: toRequiredTrimmedString(this.form.getRawValue().name),
+      code: toRequiredTrimmedString(this.form.getRawValue().code),
+    };
+
     const request$ = this.selectedId
-      ? this.departmentService.updateDepartment(this.selectedId, this.form.getRawValue() as Department)
-      : this.departmentService.addDepartment(this.form.getRawValue() as Department);
+      ? this.departmentService.updateDepartment(this.selectedId, payload)
+      : this.departmentService.addDepartment(payload);
 
     request$.subscribe({
       next: () => {
@@ -65,7 +75,7 @@ export class Departments {
     });
   }
 
-  delete(item: Department): void {
+  delete(item: DepartmentResponseDto): void {
     if (!item.id) {
       return;
     }

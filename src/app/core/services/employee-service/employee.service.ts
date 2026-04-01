@@ -1,13 +1,16 @@
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 import { environment } from '../../../../enviroment/enviroment';
 import { Path } from '../../../enums/path';
-import { Employee } from '../../../models/employee-service/employee';
-import { EmployeeListItem } from '../../../models/employee-service/employee-list-item';
-import { Page } from '../../../models/recruitment/page';
+import { buildPageParams, createApiErrorHandler, debugApiRequest } from '../../http/api.utils';
+import { CreateEmployeeRequestDto } from '../../../models/employee-service/create-employee-request.dto';
+import { EmployeeListItemResponseDto } from '../../../models/employee-service/employee-list-item-response.dto';
+import { EmployeeResponseDto } from '../../../models/employee-service/employee-response.dto';
+import { UpdateEmployeeRequestDto } from '../../../models/employee-service/update-employee-request.dto';
+import { PagedResponse } from '../../../models/shared/paged-response';
 
 @Injectable({
   providedIn: 'root',
@@ -17,71 +20,93 @@ export class EmployeeService {
 
   constructor(private readonly http: HttpClient) {}
 
-  getAll(page = 0, size = 10): Observable<Page<EmployeeListItem>> {
+  getAll(page = 0, size = 10): Observable<PagedResponse<EmployeeListItemResponseDto>> {
     return this.getPaginated(page, size);
   }
 
-  getPaginated(page: number, size: number): Observable<Page<EmployeeListItem>> {
+  getPaginated(page: number, size: number): Observable<PagedResponse<EmployeeListItemResponseDto>> {
     return this.http
-      .get<Page<EmployeeListItem>>(`${this.baseUrl}/getall`, {
-        params: this.buildPageParams(page, size),
+      .get<PagedResponse<EmployeeListItemResponseDto>>(`${this.baseUrl}/getall`, {
+        params: buildPageParams(page, size),
       })
-      .pipe(catchError(this.handleError('load employees')));
+      .pipe(
+        map((response) => ({
+          ...response,
+          content: (response.content ?? []).map((item) => this.fromListItemResponse(item)),
+        })),
+        catchError(createApiErrorHandler('load employees'))
+      );
   }
 
-  getById(id: number): Observable<Employee> {
+  getById(id: number): Observable<EmployeeResponseDto> {
     return this.http
-      .get<Employee>(`${this.baseUrl}/get/${id}`)
-      .pipe(catchError(this.handleError(`load employee #${id}`)));
+      .get<EmployeeResponseDto>(`${this.baseUrl}/get/${id}`)
+      .pipe(
+        map((response) => this.fromEmployeeResponse(response)),
+        catchError(createApiErrorHandler(`load employee #${id}`))
+      );
   }
 
-  create(employee: Employee): Observable<Employee> {
+  create(payload: CreateEmployeeRequestDto): Observable<EmployeeResponseDto> {
+    debugApiRequest('POST', `${this.baseUrl}/create`, payload);
+
     return this.http
-      .post<Employee>(`${this.baseUrl}/create`, employee)
-      .pipe(catchError(this.handleError('create employee')));
+      .post<EmployeeResponseDto>(`${this.baseUrl}/create`, payload)
+      .pipe(
+        map((response) => this.fromEmployeeResponse(response)),
+        catchError(createApiErrorHandler('create employee'))
+      );
   }
 
-  update(id: number, employee: Employee): Observable<Employee> {
+  update(id: number, payload: UpdateEmployeeRequestDto): Observable<EmployeeResponseDto> {
+    debugApiRequest('PUT', `${this.baseUrl}/update/${id}`, payload);
+
     return this.http
-      .put<Employee>(`${this.baseUrl}/update/${id}`, employee)
-      .pipe(catchError(this.handleError(`update employee #${id}`)));
+      .put<EmployeeResponseDto>(`${this.baseUrl}/update/${id}`, payload)
+      .pipe(
+        map((response) => this.fromEmployeeResponse(response)),
+        catchError(createApiErrorHandler(`update employee #${id}`))
+      );
   }
 
   delete(id: number): Observable<void> {
     return this.http
       .delete<void>(`${this.baseUrl}/delete/${id}`)
-      .pipe(catchError(this.handleError(`delete employee #${id}`)));
+      .pipe(catchError(createApiErrorHandler(`delete employee #${id}`)));
   }
 
-  search(keyword: string, page = 0, size = 10): Observable<Page<EmployeeListItem>> {
+  search(keyword: string, page = 0, size = 10): Observable<PagedResponse<EmployeeListItemResponseDto>> {
     const trimmedKeyword = keyword.trim();
-    let params = this.buildPageParams(page, size);
-
-    if (trimmedKeyword) {
-      params = params.set('keyword', trimmedKeyword);
-    }
+    const params = buildPageParams(page, size, { keyword: trimmedKeyword });
 
     return this.http
-      .get<Page<EmployeeListItem>>(`${this.baseUrl}/search`, { params })
-      .pipe(catchError(this.handleError(`search employees with "${trimmedKeyword}"`)));
-  }
-
-  private buildPageParams(page: number, size: number): HttpParams {
-    return new HttpParams()
-      .set('page', String(page))
-      .set('size', String(size));
-  }
-
-  private handleError(operation: string) {
-    return (error: HttpErrorResponse): Observable<never> => {
-      const serverMessage =
-        typeof error.error === 'string'
-          ? error.error
-          : error.error?.message ?? error.error?.error ?? error.message;
-
-      return throwError(
-        () => new Error(serverMessage || `Unable to ${operation}. Please try again.`)
+      .get<PagedResponse<EmployeeListItemResponseDto>>(`${this.baseUrl}/search`, { params })
+      .pipe(
+        map((response) => ({
+          ...response,
+          content: (response.content ?? []).map((item) => this.fromListItemResponse(item)),
+        })),
+        catchError(createApiErrorHandler(`search employees with "${trimmedKeyword}"`))
       );
+  }
+
+  private fromEmployeeResponse(response: EmployeeResponseDto): EmployeeResponseDto {
+    return {
+      ...response,
+      phone: response.phone ?? undefined,
+      hireDate: response.hireDate ?? undefined,
+      status: response.status ?? undefined,
+      jobTitle: response.jobTitle ?? undefined,
+      departmentCode: response.departmentCode ?? undefined,
+    };
+  }
+
+  private fromListItemResponse(response: EmployeeListItemResponseDto): EmployeeListItemResponseDto {
+    return {
+      ...response,
+      userId: response.userId ?? undefined,
+      jobTitle: response.jobTitle ?? undefined,
+      departmentCode: response.departmentCode ?? undefined,
     };
   }
 }

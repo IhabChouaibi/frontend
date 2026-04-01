@@ -1,20 +1,29 @@
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { forkJoin, Observable, of, throwError } from 'rxjs';
+import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 
 import { environment } from '../../../../enviroment/enviroment';
 import { Path } from '../../../enums/path';
-import { Department } from '../../../models/organisation-service/department';
-import { Job } from '../../../models/organisation-service/job';
+import {
+  buildHttpParams,
+  buildPageParams,
+  createApiErrorHandler,
+  debugApiRequest,
+  normalizePagedResponse,
+} from '../../http/api.utils';
+import { DepartmentRequestDto } from '../../../models/organisation-service/department-request.dto';
+import { DepartmentResponseDto } from '../../../models/organisation-service/department-response.dto';
+import { JobRequestDto } from '../../../models/organisation-service/job-request.dto';
+import { JobResponseDto } from '../../../models/organisation-service/job-response.dto';
 import { OrganizationOverview } from '../../../models/organisation-service/organization-overview';
 import { OrganizationQueryParams } from '../../../models/organisation-service/organization-query-params';
-import { Page } from '../../../models/recruitment/page';
+import { PagedResponse } from '../../../models/shared/paged-response';
 
-interface DepartmentApiModel extends Omit<Department, 'jobIds'> {
+interface DepartmentApiModel extends Omit<DepartmentResponseDto, 'jobIds'> {
   jobId?: number[];
   jobIds?: number[];
-  jobs?: Job[];
+  jobs?: JobResponseDto[];
 }
 
 @Injectable({
@@ -27,29 +36,31 @@ export class OrganizationService {
 
   constructor(private readonly http: HttpClient) {}
 
-  getAll(query: OrganizationQueryParams = {}): Observable<Page<Department>> {
+  getAll(query: OrganizationQueryParams = {}): Observable<PagedResponse<DepartmentResponseDto>> {
     return this.http
-      .get<Page<DepartmentApiModel>>(`${this.departmentsUrl}/list`, {
-        params: this.buildParams(query, { page: 0, size: 10 }),
+      .get<PagedResponse<DepartmentApiModel>>(`${this.departmentsUrl}/list`, {
+        params: buildPageParams(query.page ?? 0, query.size ?? 10),
       })
       .pipe(
-        map((pageResponse) => this.normalizePage(pageResponse, (department) => this.mapDepartment(department))),
-        catchError(this.handleError('load departments'))
+        map((pageResponse) =>
+          normalizePagedResponse(pageResponse, (department) => this.fromDepartmentResponse(department))
+        ),
+        catchError(createApiErrorHandler('load departments'))
       );
   }
 
-  getById(id: number): Observable<Department> {
+  getById(id: number): Observable<DepartmentResponseDto> {
     return this.http.get<DepartmentApiModel>(`${this.departmentsUrl}/get/${id}`).pipe(
-      map((department) => this.mapDepartment(department)),
-      catchError(this.handleError(`load department #${id}`))
+      map((department) => this.fromDepartmentResponse(department)),
+      catchError(createApiErrorHandler(`load department #${id}`))
     );
   }
 
-  create(data: Department): Observable<Department> {
+  create(data: DepartmentRequestDto): Observable<DepartmentResponseDto> {
     return this.createDepartment(data);
   }
 
-  update(id: number, data: Department): Observable<Department> {
+  update(id: number, data: DepartmentRequestDto): Observable<DepartmentResponseDto> {
     return this.updateDepartment(id, data);
   }
 
@@ -57,87 +68,106 @@ export class OrganizationService {
     return this.deleteDepartment(id);
   }
 
-  createDepartment(department: Department): Observable<Department> {
+  createDepartment(department: DepartmentRequestDto): Observable<DepartmentResponseDto> {
+    const payload = this.toDepartmentPayload(department);
+    debugApiRequest('POST', `${this.departmentsUrl}/create`, payload);
+
     return this.http
-      .post<DepartmentApiModel>(`${this.departmentsUrl}/create`, this.toDepartmentPayload(department))
+      .post<DepartmentApiModel>(`${this.departmentsUrl}/create`, payload)
       .pipe(
-        map((created) => this.mapDepartment(created)),
-        catchError(this.handleError('create department'))
+        map((created) => this.fromDepartmentResponse(created)),
+        catchError(createApiErrorHandler('create department'))
       );
   }
 
-  updateDepartment(id: number, department: Department): Observable<Department> {
+  updateDepartment(id: number, department: DepartmentRequestDto): Observable<DepartmentResponseDto> {
+    const payload = this.toDepartmentPayload(department);
+    debugApiRequest('PATCH', `${this.departmentsUrl}/update/${id}`, payload);
+
     return this.http
-      .patch<DepartmentApiModel>(`${this.departmentsUrl}/update/${id}`, this.toDepartmentPayload(department))
+      .patch<DepartmentApiModel>(`${this.departmentsUrl}/update/${id}`, payload)
       .pipe(
-        map((updated) => this.mapDepartment(updated)),
-        catchError(this.handleError(`update department #${id}`))
+        map((updated) => this.fromDepartmentResponse(updated)),
+        catchError(createApiErrorHandler(`update department #${id}`))
       );
   }
 
   deleteDepartment(id: number): Observable<void> {
     return this.http.delete<void>(`${this.departmentsUrl}/delete/${id}`).pipe(
-      catchError(this.handleError(`delete department #${id}`))
+      catchError(createApiErrorHandler(`delete department #${id}`))
     );
   }
 
-  getDepartmentByCode(code: string): Observable<Department> {
-    const params = new HttpParams().set('code', code);
+  getDepartmentByCode(code: string): Observable<DepartmentResponseDto> {
+    const params = buildHttpParams({ code });
 
     return this.http.get<DepartmentApiModel>(`${this.departmentsUrl}/getByCode`, { params }).pipe(
-      map((department) => this.mapDepartment(department)),
-      catchError(this.handleError(`load department with code ${code}`))
+      map((department) => this.fromDepartmentResponse(department)),
+      catchError(createApiErrorHandler(`load department with code ${code}`))
     );
   }
 
-  getAllJobs(query: OrganizationQueryParams = {}): Observable<Page<Job>> {
+  getAllJobs(query: OrganizationQueryParams = {}): Observable<PagedResponse<JobResponseDto>> {
     return this.http
-      .get<Page<Job>>(`${this.jobsUrl}/list`, {
-        params: this.buildParams(query, { page: 0, size: 10 }),
+      .get<PagedResponse<JobResponseDto>>(`${this.jobsUrl}/list`, {
+        params: buildPageParams(query.page ?? 0, query.size ?? 10),
       })
       .pipe(
-        map((pageResponse) => this.normalizePage(pageResponse, (job) => job)),
-        catchError(this.handleError('load jobs'))
+        map((pageResponse) => normalizePagedResponse(pageResponse, (job) => this.fromJobResponse(job))),
+        catchError(createApiErrorHandler('load jobs'))
       );
   }
 
-  getJobById(id: number): Observable<Job> {
-    return this.http.get<Job>(`${this.jobsUrl}/get/${id}`).pipe(
-      catchError(this.handleError(`load job #${id}`))
+  getJobById(id: number): Observable<JobResponseDto> {
+    return this.http.get<JobResponseDto>(`${this.jobsUrl}/get/${id}`).pipe(
+      map((job) => this.fromJobResponse(job)),
+      catchError(createApiErrorHandler(`load job #${id}`))
     );
   }
 
-  getJobByTitle(title: string): Observable<Job> {
-    return this.http.get<Job>(`${this.jobsUrl}/get/title/${encodeURIComponent(title)}`).pipe(
-      catchError(this.handleError(`load job with title ${title}`))
+  getJobByTitle(title: string): Observable<JobResponseDto> {
+    return this.http.get<JobResponseDto>(`${this.jobsUrl}/get/title/${encodeURIComponent(title)}`).pipe(
+      map((job) => this.fromJobResponse(job)),
+      catchError(createApiErrorHandler(`load job with title ${title}`))
     );
   }
 
-  createJob(job: Job, departmentId: number): Observable<Job> {
-    return this.http.post<Job>(`${this.jobsUrl}/addJob/${departmentId}`, job).pipe(
-      catchError(this.handleError('create job'))
+  createJob(job: JobRequestDto, departmentId: number): Observable<JobResponseDto> {
+    const payload = this.toJobPayload(job);
+    debugApiRequest('POST', `${this.jobsUrl}/addJob/${departmentId}`, payload);
+
+    return this.http.post<JobResponseDto>(`${this.jobsUrl}/addJob/${departmentId}`, payload).pipe(
+      map((response) => this.fromJobResponse(response)),
+      catchError(createApiErrorHandler('create job'))
     );
   }
 
-  updateJob(id: number, job: Job): Observable<Job> {
-    return this.http.put<Job>(`${this.jobsUrl}/update/${id}`, job).pipe(
-      catchError(this.handleError(`update job #${id}`))
+  updateJob(id: number, job: JobRequestDto): Observable<JobResponseDto> {
+    const payload = this.toJobPayload(job);
+    debugApiRequest('PUT', `${this.jobsUrl}/update/${id}`, payload);
+
+    return this.http.put<JobResponseDto>(`${this.jobsUrl}/update/${id}`, payload).pipe(
+      map((response) => this.fromJobResponse(response)),
+      catchError(createApiErrorHandler(`update job #${id}`))
     );
   }
 
   deleteJob(id: number): Observable<void> {
     return this.http.delete<void>(`${this.jobsUrl}/delete/${id}`).pipe(
-      catchError(this.handleError(`delete job #${id}`))
+      catchError(createApiErrorHandler(`delete job #${id}`))
     );
   }
 
-  assignJobToDepartment(jobId: number, departmentId: number): Observable<Job> {
-    return this.http.post<Job>(`${this.jobsUrl}/add/${jobId}/${departmentId}`, null).pipe(
-      catchError(this.handleError(`assign job #${jobId} to department #${departmentId}`))
+  assignJobToDepartment(jobId: number, departmentId: number): Observable<JobResponseDto> {
+    debugApiRequest('POST', `${this.jobsUrl}/add/${jobId}/${departmentId}`);
+
+    return this.http.post<JobResponseDto>(`${this.jobsUrl}/add/${jobId}/${departmentId}`, null).pipe(
+      map((response) => this.fromJobResponse(response)),
+      catchError(createApiErrorHandler(`assign job #${jobId} to department #${departmentId}`))
     );
   }
 
-  getJobsByDepartment(departmentId: number): Observable<Job[]> {
+  getJobsByDepartment(departmentId: number): Observable<JobResponseDto[]> {
     return this.getById(departmentId).pipe(
       switchMap((department) => {
         const jobIds = department.jobIds ?? [];
@@ -148,7 +178,7 @@ export class OrganizationService {
 
         return forkJoin(jobIds.map((jobId) => this.getJobById(jobId)));
       }),
-      catchError(this.handleError(`load jobs for department #${departmentId}`))
+      catchError(createApiErrorHandler(`load jobs for department #${departmentId}`))
     );
   }
 
@@ -156,10 +186,10 @@ export class OrganizationService {
     return forkJoin({
       departments: this.getAll({ page, size }).pipe(map((response) => response.content)),
       jobs: this.getAllJobs({ page, size }).pipe(map((response) => response.content)),
-    }).pipe(catchError(this.handleError('load organization overview')));
+    }).pipe(catchError(createApiErrorHandler('load organization overview')));
   }
 
-  getVisibleDepartments(page = 0, size = 50): Observable<Page<Department>> {
+  getVisibleDepartments(page = 0, size = 50): Observable<PagedResponse<DepartmentResponseDto>> {
     return this.getAll({ page, size });
   }
 
@@ -167,41 +197,7 @@ export class OrganizationService {
     return this.getOrganizationOverview(page, size);
   }
 
-  private buildParams(
-    values: object,
-    defaults: Record<string, string | number | boolean>
-  ): HttpParams {
-    let params = new HttpParams();
-
-    Object.entries({
-      ...defaults,
-      ...(values as Record<string, string | number | boolean | undefined | null>),
-    }).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        params = params.set(key, String(value));
-      }
-    });
-
-    return params;
-  }
-
-  private normalizePage<TInput, TOutput>(
-    page: Page<TInput> | null | undefined,
-    mapper: (item: TInput) => TOutput
-  ): Page<TOutput> {
-    return {
-      content: (page?.content ?? []).map((item) => mapper(item)),
-      totalElements: page?.totalElements ?? 0,
-      totalPages: page?.totalPages ?? 0,
-      size: page?.size ?? 0,
-      number: page?.number ?? 0,
-      first: page?.first ?? true,
-      last: page?.last ?? true,
-      numberOfElements: page?.numberOfElements ?? 0,
-    };
-  }
-
-  private mapDepartment(department: DepartmentApiModel): Department {
+  private fromDepartmentResponse(department: DepartmentApiModel): DepartmentResponseDto {
     const { jobId, jobIds, jobs, ...rest } = department;
 
     return {
@@ -213,7 +209,7 @@ export class OrganizationService {
     };
   }
 
-  private toDepartmentPayload(department: Department): DepartmentApiModel {
+  private toDepartmentPayload(department: DepartmentRequestDto): DepartmentApiModel {
     const { jobIds, ...rest } = department;
 
     return {
@@ -222,16 +218,17 @@ export class OrganizationService {
     };
   }
 
-  private handleError(operation: string) {
-    return (error: HttpErrorResponse): Observable<never> => {
-      const serverMessage =
-        typeof error.error === 'string'
-          ? error.error
-          : error.error?.message ?? error.error?.error ?? error.message;
+  private fromJobResponse(job: JobResponseDto): JobResponseDto {
+    return {
+      ...job,
+      level: job.level ?? undefined,
+    };
+  }
 
-      return throwError(
-        () => new Error(serverMessage || `Unable to ${operation}. Please try again.`)
-      );
+  private toJobPayload(job: JobRequestDto): JobRequestDto {
+    return {
+      title: job.title,
+      level: job.level ?? undefined,
     };
   }
 }

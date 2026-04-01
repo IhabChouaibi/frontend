@@ -1,15 +1,21 @@
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
+import { Observable } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 import { environment } from '../../../../enviroment/enviroment';
 import { Path } from '../../../enums/path';
-import { CheckInRequest } from '../../../models/presence-service/check-in-request';
-import { CheckOutRequest } from '../../../models/presence-service/check-out-request';
-import { PresenceValidationRequest } from '../../../models/presence-service/presence-validation-request';
-import { Presence } from '../../../models/presence-service/presence';
-import { Page } from '../../../models/recruitment/page';
+import {
+  buildPageParams,
+  createApiErrorHandler,
+  debugApiRequest,
+  normalizePagedResponse,
+} from '../../http/api.utils';
+import { CheckInRequestDto } from '../../../models/presence-service/check-in-request.dto';
+import { CheckOutRequestDto } from '../../../models/presence-service/check-out-request.dto';
+import { PresenceResponseDto } from '../../../models/presence-service/presence-response.dto';
+import { PresenceValidationRequestDto } from '../../../models/presence-service/presence-validation-request.dto';
+import { PagedResponse } from '../../../models/shared/paged-response';
 
 @Injectable({
   providedIn: 'root',
@@ -19,95 +25,95 @@ export class PresenceService {
 
   constructor(private readonly http: HttpClient) {}
 
-  getAll(page = 0, size = 10): Observable<Page<Presence>> {
-    const params = new HttpParams()
-      .set('page', String(page))
-      .set('size', String(size));
+  getAll(page = 0, size = 10): Observable<PagedResponse<PresenceResponseDto>> {
+    const params = buildPageParams(page, size);
 
     return this.http
-      .get<Page<Presence>>(`${this.baseUrl}/getall`, { params })
+      .get<PagedResponse<PresenceResponseDto>>(`${this.baseUrl}/getall`, { params })
       .pipe(
-        map((pageResponse) => this.normalizePage(pageResponse)),
-        catchError(this.handleError('load presence records'))
+        map((pageResponse) => normalizePagedResponse(pageResponse, (item) => this.fromResponse(item))),
+        catchError(createApiErrorHandler('load presence records'))
       );
   }
 
-  checkIn(request: CheckInRequest): Observable<Presence> {
-    return this.http
-      .post<Presence>(`${this.baseUrl}/check-in`, request)
-      .pipe(catchError(this.handleError('check in')));
-  }
+  checkIn(request: CheckInRequestDto): Observable<PresenceResponseDto> {
+    debugApiRequest('POST', `${this.baseUrl}/check-in`, request);
 
-  checkOut(request: CheckOutRequest): Observable<Presence> {
     return this.http
-      .post<Presence>(`${this.baseUrl}/check-out`, request)
-      .pipe(catchError(this.handleError('check out')));
-  }
-
-  getEmployeeHistory(employeeId: number): Observable<Presence[]> {
-    return this.http
-      .get<Presence[]>(`${this.baseUrl}/employee/${employeeId}`)
+      .post<PresenceResponseDto>(`${this.baseUrl}/check-in`, request)
       .pipe(
-        map((items) => items ?? []),
-        catchError(this.handleError(`load presence history for employee #${employeeId}`))
+        map((response) => this.fromResponse(response)),
+        catchError(createApiErrorHandler('check in'))
       );
   }
 
-  getEmployeeHistoryPaged(employeeId: number, page = 0, size = 10): Observable<Page<Presence>> {
-    const params = new HttpParams()
-      .set('page', String(page))
-      .set('size', String(size));
+  checkOut(request: CheckOutRequestDto): Observable<PresenceResponseDto> {
+    debugApiRequest('POST', `${this.baseUrl}/check-out`, request);
 
     return this.http
-      .get<Page<Presence>>(`${this.baseUrl}/employee/${employeeId}/history`, { params })
+      .post<PresenceResponseDto>(`${this.baseUrl}/check-out`, request)
       .pipe(
-        map((pageResponse) => this.normalizePage(pageResponse)),
-        catchError(this.handleError(`load paged presence history for employee #${employeeId}`))
+        map((response) => this.fromResponse(response)),
+        catchError(createApiErrorHandler('check out'))
       );
   }
 
-  validatePresence(id: number, payload: PresenceValidationRequest): Observable<Presence> {
+  getEmployeeHistory(employeeId: number): Observable<PresenceResponseDto[]> {
     return this.http
-      .put<Presence>(`${this.baseUrl}/${id}/validate`, payload)
-      .pipe(catchError(this.handleError(`validate presence record #${id}`)));
-  }
-
-  getPendingValidation(page = 0, size = 10): Observable<Page<Presence>> {
-    const params = new HttpParams()
-      .set('page', String(page))
-      .set('size', String(size));
-
-    return this.http
-      .get<Page<Presence>>(`${this.baseUrl}/pending-validation`, { params })
+      .get<PresenceResponseDto[]>(`${this.baseUrl}/employee/${employeeId}`)
       .pipe(
-        map((pageResponse) => this.normalizePage(pageResponse)),
-        catchError(this.handleError('load pending presence validations'))
+        map((items) => (items ?? []).map((item) => this.fromResponse(item))),
+        catchError(createApiErrorHandler(`load presence history for employee #${employeeId}`))
       );
   }
 
-  private normalizePage(page: Page<Presence> | null | undefined): Page<Presence> {
+  getEmployeeHistoryPaged(
+    employeeId: number,
+    page = 0,
+    size = 10
+  ): Observable<PagedResponse<PresenceResponseDto>> {
+    const params = buildPageParams(page, size);
+
+    return this.http
+      .get<PagedResponse<PresenceResponseDto>>(`${this.baseUrl}/employee/${employeeId}/history`, { params })
+      .pipe(
+        map((pageResponse) => normalizePagedResponse(pageResponse, (item) => this.fromResponse(item))),
+        catchError(createApiErrorHandler(`load paged presence history for employee #${employeeId}`))
+      );
+  }
+
+  validatePresence(id: number, payload: PresenceValidationRequestDto): Observable<PresenceResponseDto> {
+    debugApiRequest('PUT', `${this.baseUrl}/${id}/validate`, payload);
+
+    return this.http
+      .put<PresenceResponseDto>(`${this.baseUrl}/${id}/validate`, payload)
+      .pipe(
+        map((response) => this.fromResponse(response)),
+        catchError(createApiErrorHandler(`validate presence record #${id}`))
+      );
+  }
+
+  getPendingValidation(page = 0, size = 10): Observable<PagedResponse<PresenceResponseDto>> {
+    const params = buildPageParams(page, size);
+
+    return this.http
+      .get<PagedResponse<PresenceResponseDto>>(`${this.baseUrl}/pending-validation`, { params })
+      .pipe(
+        map((pageResponse) => normalizePagedResponse(pageResponse, (item) => this.fromResponse(item))),
+        catchError(createApiErrorHandler('load pending presence validations'))
+      );
+  }
+
+  private fromResponse(response: PresenceResponseDto): PresenceResponseDto {
     return {
-      content: page?.content ?? [],
-      totalElements: page?.totalElements ?? 0,
-      totalPages: page?.totalPages ?? 0,
-      size: page?.size ?? 0,
-      number: page?.number ?? 0,
-      first: page?.first ?? true,
-      last: page?.last ?? true,
-      numberOfElements: page?.numberOfElements ?? 0,
-    };
-  }
-
-  private handleError(operation: string) {
-    return (error: HttpErrorResponse): Observable<never> => {
-      const serverMessage =
-        typeof error.error === 'string'
-          ? error.error
-          : error.error?.message ?? error.error?.error ?? error.message;
-
-      return throwError(
-        () => new Error(serverMessage || `Unable to ${operation}. Please try again.`)
-      );
+      ...response,
+      date: response.date ?? undefined,
+      checkIn: response.checkIn ?? undefined,
+      checkOut: response.checkOut ?? undefined,
+      workedMinutes: response.workedMinutes ?? undefined,
+      lateMinutes: response.lateMinutes ?? undefined,
+      status: response.status ?? undefined,
+      validated: response.validated ?? false,
     };
   }
 }

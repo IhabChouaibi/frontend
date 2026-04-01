@@ -1,24 +1,32 @@
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 import { environment } from '../../../../enviroment/enviroment';
 import { Path } from '../../../enums/path';
-import { CreateLeaveRequest } from '../../../models/leave-service/create-leave-request';
+import { AuthService } from '../auth-service';
+import {
+  buildHttpParams,
+  buildPageParams,
+  createApiErrorHandler,
+  debugApiRequest,
+  normalizePagedResponse,
+} from '../../http/api.utils';
+import { CreateLeaveRequestDto } from '../../../models/leave-service/create-leave-request.dto';
 import { LeaveQueryParams } from '../../../models/leave-service/leave-query-params';
-import { LeaveType } from '../../../models/leave-service/leave-type';
-import { Leave } from '../../../models/leave-service/leave';
-import { RejectLeaveRequest } from '../../../models/leave-service/reject-leave-request';
-import { UpdateLeaveRequest } from '../../../models/leave-service/update-leave-request';
-import { Page } from '../../../models/recruitment/page';
+import { LeaveTypeDto } from '../../../models/leave-service/leave-type.dto';
+import { LeaveRequestResponseDto } from '../../../models/leave-service/leave-request-response.dto';
+import { RejectLeaveRequestDto } from '../../../models/leave-service/reject-leave-request.dto';
+import { UpdateLeaveRequestDto } from '../../../models/leave-service/update-leave-request.dto';
+import { PagedResponse } from '../../../models/shared/paged-response';
 
-interface LeaveApiModel extends Omit<Leave, 'leaveTypeId'> {
+interface LeaveApiModel extends Omit<LeaveRequestResponseDto, 'leaveTypeId'> {
   idLeaveType?: number;
   leaveTypeId?: number;
 }
 
-interface CreateLeaveApiPayload extends Omit<CreateLeaveRequest, 'leaveTypeId'> {
+interface CreateLeaveApiPayload extends Omit<CreateLeaveRequestDto, 'leaveTypeId'> {
   idLeaveType: number;
 }
 
@@ -32,9 +40,12 @@ export class LeaveService {
   private readonly leaveValidationUrl = `${this.baseUrl}/leave-validation`;
   private readonly leaveTypesUrl = `${this.baseUrl}/leave`;
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(
+    private readonly http: HttpClient,
+    private readonly authService: AuthService
+  ) {}
 
-  getAll(query: LeaveQueryParams = {}): Observable<Page<Leave>> {
+  getAll(query: LeaveQueryParams = {}): Observable<PagedResponse<LeaveRequestResponseDto>> {
     if (query.employeeId !== undefined && query.employeeId !== null) {
       return this.getByEmployee(query.employeeId, query);
     }
@@ -42,22 +53,25 @@ export class LeaveService {
     return this.getPending(query.page ?? 0, query.size ?? 10);
   }
 
-  getById(id: number): Observable<Leave> {
+  getById(id: number): Observable<LeaveRequestResponseDto> {
     return throwError(
       () => new Error(`Leave request lookup by id is not exposed by the current backend for request #${id}.`)
     );
   }
 
-  create(data: CreateLeaveRequest): Observable<Leave> {
+  create(data: CreateLeaveRequestDto): Observable<LeaveRequestResponseDto> {
     return this.requestLeave(data);
   }
 
-  update(id: number, data: UpdateLeaveRequest): Observable<Leave> {
+  update(id: number, data: UpdateLeaveRequestDto): Observable<LeaveRequestResponseDto> {
+    const payload = this.toUpdatePayload(data);
+    debugApiRequest('PUT', `${this.leaveRequestsUrl}/update/${id}`, payload);
+
     return this.http
-      .put<LeaveApiModel>(`${this.leaveRequestsUrl}/update/${id}`, data)
+      .put<LeaveApiModel>(`${this.leaveRequestsUrl}/update/${id}`, payload)
       .pipe(
-        map((leave) => this.mapLeave(leave)),
-        catchError(this.handleError(`update leave request #${id}`))
+        map((leave) => this.fromLeaveResponse(leave)),
+        catchError(createApiErrorHandler(`update leave request #${id}`))
       );
   }
 
@@ -71,199 +85,185 @@ export class LeaveService {
     );
   }
 
-  requestLeave(data: CreateLeaveRequest): Observable<Leave> {
+  requestLeave(data: CreateLeaveRequestDto): Observable<LeaveRequestResponseDto> {
+    const payload = this.toCreatePayload(data);
+    debugApiRequest('POST', `${this.leaveRequestsUrl}/submit`, payload);
+
     return this.http
-      .post<LeaveApiModel>(`${this.leaveRequestsUrl}/submit`, this.toCreatePayload(data))
+      .post<LeaveApiModel>(`${this.leaveRequestsUrl}/submit`, payload)
       .pipe(
-        map((leave) => this.mapLeave(leave)),
-        catchError(this.handleError('submit leave request'))
+        map((leave) => this.fromLeaveResponse(leave)),
+        catchError(createApiErrorHandler('submit leave request'))
       );
   }
 
-  getMyLeaves(employeeId: number, query: Omit<LeaveQueryParams, 'employeeId'> = {}): Observable<Page<Leave>> {
+  getMyLeaves(
+    employeeId: number,
+    query: Omit<LeaveQueryParams, 'employeeId'> = {}
+  ): Observable<PagedResponse<LeaveRequestResponseDto>> {
+    return this.getByEmployee(employeeId, query);
+  }
+
+  getMyLeavesFromSession(
+    query: Omit<LeaveQueryParams, 'employeeId'> = {}
+  ): Observable<PagedResponse<LeaveRequestResponseDto>> {
+    const employeeId = this.authService.getEmployeeId();
+
+    if (employeeId === null) {
+      return throwError(() => new Error('No employeeId available in the current session.'));
+    }
+
     return this.getByEmployee(employeeId, query);
   }
 
   cancelLeave(id: number, employeeId: number): Observable<void> {
-    const params = new HttpParams().set('employeeId', String(employeeId));
+    const params = buildHttpParams({ employeeId });
 
     return this.http.put<void>(`${this.leaveRequestsUrl}/cancel/${id}`, null, { params }).pipe(
-      catchError(this.handleError(`cancel leave request #${id}`))
+      catchError(createApiErrorHandler(`cancel leave request #${id}`))
     );
   }
 
-  getPending(page = 0, size = 10): Observable<Page<Leave>> {
-    const params = new HttpParams()
-      .set('page', String(page))
-      .set('size', String(size));
+  getPending(page = 0, size = 10): Observable<PagedResponse<LeaveRequestResponseDto>> {
+    const params = buildPageParams(page, size);
 
-    return this.http.get<Page<LeaveApiModel>>(`${this.leaveRequestsUrl}/pending`, { params }).pipe(
-      map((pageResponse) => this.normalizePage(pageResponse, (leave) => this.mapLeave(leave))),
-      catchError(this.handleError('load pending leave requests'))
+    return this.http.get<PagedResponse<LeaveApiModel>>(`${this.leaveRequestsUrl}/pending`, { params }).pipe(
+      map((pageResponse) => normalizePagedResponse(pageResponse, (leave) => this.fromLeaveResponse(leave))),
+      catchError(createApiErrorHandler('load pending leave requests'))
     );
   }
 
-  searchPending(keyword: string, page = 0, size = 10): Observable<Page<Leave>> {
-    const params = new HttpParams()
-      .set('keyword', keyword.trim())
-      .set('page', String(page))
-      .set('size', String(size));
+  searchPending(keyword: string, page = 0, size = 10): Observable<PagedResponse<LeaveRequestResponseDto>> {
+    const params = buildPageParams(page, size, { keyword: keyword.trim() });
 
-    return this.http.get<Page<LeaveApiModel>>(`${this.leaveRequestsUrl}/pending/search`, { params }).pipe(
-      map((pageResponse) => this.normalizePage(pageResponse, (leave) => this.mapLeave(leave))),
-      catchError(this.handleError(`search pending leave requests with "${keyword}"`))
+    return this.http.get<PagedResponse<LeaveApiModel>>(`${this.leaveRequestsUrl}/pending/search`, { params }).pipe(
+      map((pageResponse) => normalizePagedResponse(pageResponse, (leave) => this.fromLeaveResponse(leave))),
+      catchError(createApiErrorHandler(`search pending leave requests with "${keyword}"`))
     );
   }
 
-  approveLeave(requestId: number, managerId: number): Observable<Leave> {
-    const params = new HttpParams().set('managerId', String(managerId));
+  approveLeave(requestId: number, managerId: number): Observable<LeaveRequestResponseDto> {
+    const params = buildHttpParams({ managerId });
+    debugApiRequest('PUT', `${this.leaveValidationUrl}/${requestId}/approve`, undefined, params);
 
     return this.http
       .put<LeaveApiModel>(`${this.leaveValidationUrl}/${requestId}/approve`, null, { params })
       .pipe(
-        map((leave) => this.mapLeave(leave)),
-        catchError(this.handleError(`approve leave request #${requestId}`))
+        map((leave) => this.fromLeaveResponse(leave)),
+        catchError(createApiErrorHandler(`approve leave request #${requestId}`))
       );
   }
 
-  rejectLeave(requestId: number, managerId: number, payload: RejectLeaveRequest): Observable<Leave> {
-    const params = new HttpParams().set('managerId', String(managerId));
+  rejectLeave(
+    requestId: number,
+    managerId: number,
+    payload: RejectLeaveRequestDto
+  ): Observable<LeaveRequestResponseDto> {
+    const params = buildHttpParams({ managerId });
+    debugApiRequest('PUT', `${this.leaveValidationUrl}/${requestId}/reject`, payload, params);
 
     return this.http
       .put<LeaveApiModel>(`${this.leaveValidationUrl}/${requestId}/reject`, payload, { params })
       .pipe(
-        map((leave) => this.mapLeave(leave)),
-        catchError(this.handleError(`reject leave request #${requestId}`))
+        map((leave) => this.fromLeaveResponse(leave)),
+        catchError(createApiErrorHandler(`reject leave request #${requestId}`))
       );
   }
 
-  getByEmployee(employeeId: number, query: Omit<LeaveQueryParams, 'employeeId'> = {}): Observable<Page<Leave>> {
+  getByEmployee(
+    employeeId: number,
+    query: Omit<LeaveQueryParams, 'employeeId'> = {}
+  ): Observable<PagedResponse<LeaveRequestResponseDto>> {
     if (query.leaveTypeId !== undefined && query.leaveTypeId !== null) {
-      const params = this.buildParams(
-        {
-          employeeId,
-          leaveTypeId: query.leaveTypeId,
-          page: query.page ?? 0,
-          size: query.size ?? 10,
-        },
-        {}
-      );
+      const params = buildPageParams(query.page ?? 0, query.size ?? 10, {
+        employeeId,
+        leaveTypeId: query.leaveTypeId,
+      });
 
-      return this.http.get<Page<LeaveApiModel>>(`${this.leaveHistoryUrl}/get-by-status`, { params }).pipe(
-        map((pageResponse) => this.normalizePage(pageResponse, (leave) => this.mapLeave(leave))),
-        catchError(this.handleError(`load leave history for employee #${employeeId}`))
+      return this.http.get<PagedResponse<LeaveApiModel>>(`${this.leaveHistoryUrl}/get-by-status`, { params }).pipe(
+        map((pageResponse) => normalizePagedResponse(pageResponse, (leave) => this.fromLeaveResponse(leave))),
+        catchError(createApiErrorHandler(`load leave history for employee #${employeeId}`))
       );
     }
 
-    const params = this.buildParams(
-      {
-        page: query.page ?? 0,
-        size: query.size ?? 10,
-      },
-      {}
-    );
+    const params = buildPageParams(query.page ?? 0, query.size ?? 10);
 
     return this.http
-      .get<Page<LeaveApiModel>>(`${this.leaveHistoryUrl}/get-by-employee/${employeeId}`, { params })
+      .get<PagedResponse<LeaveApiModel>>(`${this.leaveHistoryUrl}/get-by-employee/${employeeId}`, { params })
       .pipe(
-        map((pageResponse) => this.normalizePage(pageResponse, (leave) => this.mapLeave(leave))),
-        catchError(this.handleError(`load leave history for employee #${employeeId}`))
+        map((pageResponse) => normalizePagedResponse(pageResponse, (leave) => this.fromLeaveResponse(leave))),
+        catchError(createApiErrorHandler(`load leave history for employee #${employeeId}`))
       );
   }
 
   getTakenLeaveDays(employeeId: number, leaveTypeId: number): Observable<number> {
-    const params = new HttpParams()
-      .set('employeeId', String(employeeId))
-      .set('leaveTypeId', String(leaveTypeId));
+    const params = buildHttpParams({ employeeId, leaveTypeId });
 
     return this.http.get<number>(`${this.leaveHistoryUrl}/get-total`, { params }).pipe(
-      catchError(this.handleError(`load leave totals for employee #${employeeId}`))
+      catchError(createApiErrorHandler(`load leave totals for employee #${employeeId}`))
     );
   }
 
-  searchEmployeeHistory(employeeId: number, keyword: string, page = 0, size = 10): Observable<Page<Leave>> {
-    const params = new HttpParams()
-      .set('employeeId', String(employeeId))
-      .set('keyword', keyword.trim())
-      .set('page', String(page))
-      .set('size', String(size));
+  searchEmployeeHistory(
+    employeeId: number,
+    keyword: string,
+    page = 0,
+    size = 10
+  ): Observable<PagedResponse<LeaveRequestResponseDto>> {
+    const params = buildPageParams(page, size, {
+      employeeId,
+      keyword: keyword.trim(),
+    });
 
-    return this.http.get<Page<LeaveApiModel>>(`${this.leaveHistoryUrl}/search`, { params }).pipe(
-      map((pageResponse) => this.normalizePage(pageResponse, (leave) => this.mapLeave(leave))),
-      catchError(this.handleError(`search leave history for employee #${employeeId}`))
+    return this.http.get<PagedResponse<LeaveApiModel>>(`${this.leaveHistoryUrl}/search`, { params }).pipe(
+      map((pageResponse) => normalizePagedResponse(pageResponse, (leave) => this.fromLeaveResponse(leave))),
+      catchError(createApiErrorHandler(`search leave history for employee #${employeeId}`))
     );
   }
 
-  getLeaveTypes(page = 0, size = 50): Observable<Page<LeaveType>> {
-    const params = new HttpParams()
-      .set('page', String(page))
-      .set('size', String(size));
+  getLeaveTypes(page = 0, size = 50): Observable<PagedResponse<LeaveTypeDto>> {
+    const params = buildPageParams(page, size);
 
-    return this.http.get<Page<LeaveType>>(`${this.leaveTypesUrl}/getall`, { params }).pipe(
-      map((pageResponse) => this.normalizePage(pageResponse, (type) => type)),
-      catchError(this.handleError('load leave types'))
+    return this.http.get<PagedResponse<LeaveTypeDto>>(`${this.leaveTypesUrl}/getall`, { params }).pipe(
+      map((pageResponse) => normalizePagedResponse(pageResponse, (type) => this.fromLeaveTypeResponse(type))),
+      catchError(createApiErrorHandler('load leave types'))
     );
   }
 
-  getLeaveTypeById(id: number): Observable<LeaveType> {
-    return this.http.get<LeaveType>(`${this.leaveTypesUrl}/get/${id}`).pipe(
-      catchError(this.handleError(`load leave type #${id}`))
+  getLeaveTypeById(id: number): Observable<LeaveTypeDto> {
+    return this.http.get<LeaveTypeDto>(`${this.leaveTypesUrl}/get/${id}`).pipe(
+      map((response) => this.fromLeaveTypeResponse(response)),
+      catchError(createApiErrorHandler(`load leave type #${id}`))
     );
   }
 
-  createLeaveType(leaveType: LeaveType): Observable<LeaveType> {
-    return this.http.post<LeaveType>(`${this.leaveTypesUrl}/add`, leaveType).pipe(
-      catchError(this.handleError('create leave type'))
+  createLeaveType(leaveType: LeaveTypeDto): Observable<LeaveTypeDto> {
+    const payload = this.toLeaveTypePayload(leaveType);
+    debugApiRequest('POST', `${this.leaveTypesUrl}/add`, payload);
+
+    return this.http.post<LeaveTypeDto>(`${this.leaveTypesUrl}/add`, payload).pipe(
+      map((response) => this.fromLeaveTypeResponse(response)),
+      catchError(createApiErrorHandler('create leave type'))
     );
   }
 
-  updateLeaveType(id: number, leaveType: LeaveType): Observable<LeaveType> {
-    return this.http.patch<LeaveType>(`${this.leaveTypesUrl}/update/${id}`, leaveType).pipe(
-      catchError(this.handleError(`update leave type #${id}`))
+  updateLeaveType(id: number, leaveType: LeaveTypeDto): Observable<LeaveTypeDto> {
+    const payload = this.toLeaveTypePayload(leaveType);
+    debugApiRequest('PATCH', `${this.leaveTypesUrl}/update/${id}`, payload);
+
+    return this.http.patch<LeaveTypeDto>(`${this.leaveTypesUrl}/update/${id}`, payload).pipe(
+      map((response) => this.fromLeaveTypeResponse(response)),
+      catchError(createApiErrorHandler(`update leave type #${id}`))
     );
   }
 
   deleteLeaveType(id: number): Observable<void> {
     return this.http.delete<void>(`${this.leaveTypesUrl}/delete/${id}`).pipe(
-      catchError(this.handleError(`delete leave type #${id}`))
+      catchError(createApiErrorHandler(`delete leave type #${id}`))
     );
   }
 
-  private buildParams(
-    values: object,
-    defaults: Record<string, string | number | boolean>
-  ): HttpParams {
-    let params = new HttpParams();
-
-    Object.entries({
-      ...defaults,
-      ...(values as Record<string, string | number | boolean | undefined | null>),
-    }).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        params = params.set(key, String(value));
-      }
-    });
-
-    return params;
-  }
-
-  private normalizePage<TInput, TOutput>(
-    page: Page<TInput> | null | undefined,
-    mapper: (item: TInput) => TOutput
-  ): Page<TOutput> {
-    return {
-      content: (page?.content ?? []).map((item) => mapper(item)),
-      totalElements: page?.totalElements ?? 0,
-      totalPages: page?.totalPages ?? 0,
-      size: page?.size ?? 0,
-      number: page?.number ?? 0,
-      first: page?.first ?? true,
-      last: page?.last ?? true,
-      numberOfElements: page?.numberOfElements ?? 0,
-    };
-  }
-
-  private mapLeave(leave: LeaveApiModel): Leave {
+  private fromLeaveResponse(leave: LeaveApiModel): LeaveRequestResponseDto {
     const { idLeaveType, ...rest } = leave;
 
     return {
@@ -272,7 +272,7 @@ export class LeaveService {
     };
   }
 
-  private toCreatePayload(data: CreateLeaveRequest): CreateLeaveApiPayload {
+  private toCreatePayload(data: CreateLeaveRequestDto): CreateLeaveApiPayload {
     const { leaveTypeId, ...rest } = data;
 
     return {
@@ -281,16 +281,34 @@ export class LeaveService {
     };
   }
 
-  private handleError(operation: string) {
-    return (error: HttpErrorResponse): Observable<never> => {
-      const serverMessage =
-        typeof error.error === 'string'
-          ? error.error
-          : error.error?.message ?? error.error?.error ?? error.message;
+  private toUpdatePayload(data: UpdateLeaveRequestDto): UpdateLeaveRequestDto {
+    return {
+      leaveTypeId: data.leaveTypeId,
+      startDate: data.startDate,
+      endDate: data.endDate,
+      reason: data.reason ?? undefined,
+    };
+  }
 
-      return throwError(
-        () => new Error(serverMessage || `Unable to ${operation}. Please try again.`)
-      );
+  private fromLeaveTypeResponse(leaveType: LeaveTypeDto): LeaveTypeDto {
+    return {
+      ...leaveType,
+      paid: leaveType.paid ?? undefined,
+      requiresApproval: leaveType.requiresApproval ?? undefined,
+      requiresDocument: leaveType.requiresDocument ?? undefined,
+      maxDaysPerYear: leaveType.maxDaysPerYear ?? undefined,
+      deductFromBalance: leaveType.deductFromBalance ?? false,
+    };
+  }
+
+  private toLeaveTypePayload(leaveType: LeaveTypeDto): LeaveTypeDto {
+    return {
+      name: leaveType.name,
+      paid: leaveType.paid ?? 'NO',
+      requiresApproval: leaveType.requiresApproval ?? 'NO',
+      requiresDocument: leaveType.requiresDocument ?? 'NO',
+      maxDaysPerYear: leaveType.maxDaysPerYear ?? undefined,
+      deductFromBalance: leaveType.deductFromBalance ?? false,
     };
   }
 }

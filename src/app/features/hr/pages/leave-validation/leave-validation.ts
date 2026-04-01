@@ -4,7 +4,7 @@ import { FormControl } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth-service';
 import { LeaveService } from '../../../../core/services/leave-service/leave.service';
 import { LeaveValidationService } from '../../../../core/services/leave-service/leave-validation-service';
-import { Leave } from '../../../../models/leave-service/leave';
+import { LeaveRequestResponseDto } from '../../../../models/leave-service/leave-request-response.dto';
 
 @Component({
   selector: 'app-leave-validation',
@@ -14,7 +14,7 @@ import { Leave } from '../../../../models/leave-service/leave';
 })
 export class LeaveValidation {
   readonly searchControl = new FormControl('', { nonNullable: true });
-  requests: Leave[] = [];
+  requests: LeaveRequestResponseDto[] = [];
   loading = false;
   error = '';
   page = 0;
@@ -36,7 +36,7 @@ export class LeaveValidation {
   }
 
   approve(id?: number): void {
-    const managerId = this.authService.getCurrentUserId() ?? 1;
+    const managerId = this.authService.getEmployeeId() ?? 1;
 
     if (!id) {
       return;
@@ -49,7 +49,7 @@ export class LeaveValidation {
   }
 
   reject(id?: number): void {
-    const managerId = this.authService.getCurrentUserId() ?? 1;
+    const managerId = this.authService.getEmployeeId() ?? 1;
 
     if (!id) {
       return;

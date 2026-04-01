@@ -3,6 +3,7 @@ import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
+import { extractApiErrorMessage } from '../http/api.utils';
 import { AuthService } from '../services/auth-service';
 
 function getFriendlyMessage(error: HttpErrorResponse): string {
@@ -18,7 +19,7 @@ function getFriendlyMessage(error: HttpErrorResponse): string {
     case 404:
       return 'The requested API endpoint was not found.';
     default:
-      return error.error?.message || error.message || 'An unexpected error occurred.';
+      return extractApiErrorMessage(error);
   }
 }
 
